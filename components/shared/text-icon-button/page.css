@@ -1,0 +1,11 @@
+.dropdown-option:hover {
+  background-color: #f3f4f6;
+}
+
+.custom-hover-icon {
+  transition: transform 0.2s ease;
+}
+
+.custom-hover-icon:hover {
+  transform: scale(1.1);
+}

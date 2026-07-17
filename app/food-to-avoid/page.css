@@ -1,0 +1,81 @@
+.food-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-left: '50px';
+}
+
+.food-card-wrapper {
+    flex: 0 0 200px;
+    max-width: 100%;
+}
+
+.food-card {
+    border: 1px solid #e5e7eb;
+    /* border-radius: 12px; */
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    height: 340px;
+    position: relative;
+    transition: box-shadow 0.3s ease;
+    padding: 8px;
+}
+
+.food-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.food-image-container {
+    position: relative;
+    height: 220px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.food-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+}
+
+.food-type {
+    position: absolute;
+    bottom: 185px;
+    right: 8px;
+    background: #fff;
+    color: #000;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    z-index: 2;
+    font-weight: 600;
+}
+
+.food-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    background: white;
+}
+
+.food-footer-text {
+    font-size: 13px;
+}
+
+.food-footer-text p:first-child {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.food-footer-text p:last-child {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+}

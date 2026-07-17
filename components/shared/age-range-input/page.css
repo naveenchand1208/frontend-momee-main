@@ -1,0 +1,35 @@
+.tiny-age-range-wrapper {
+    font-size: 12px;
+    width: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tiny-age-label {
+    font-weight: 500;
+    font-size: 12px;
+    color: #333;
+}
+
+.tiny-age-inputs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tiny-age-inputs input {
+    width: 30px;
+    height: 28px;
+    /* padding: 2px 6px; */
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    text-align: center;
+}
+
+.tiny-separator {
+    font-size: 12px;
+    color: #555;
+}

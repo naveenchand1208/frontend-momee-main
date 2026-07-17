@@ -1,0 +1,106 @@
+.form-container {
+  background: linear-gradient(135deg, #faf9ff, #fff0f5);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* DATE + DEFAULT INPUT SAME LINE */
+.header-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-section > * {
+  flex: 1; /* equal width */
+}
+
+.mood-title {
+  font-size: 1.2rem;
+  margin-top: 30px;
+  font-weight: 600;
+  color: #4a3f6b;
+}
+
+/* EXACT 5 CARDS IN EACH ROW  */
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.mood-card {
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  padding: 15px 10px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.mood-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.emoji {
+  font-size: 2rem;
+}
+
+.mood-label {
+  font-weight: 600;
+  color: #444;
+  margin: 6px 0;
+}
+
+/* QUOTE INPUT */
+.quote-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 8px;
+  outline: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border 0.2s;
+}
+
+.quote-input:focus {
+  border-color: #9b6bff;
+  box-shadow: 0 0 0 2px rgba(155, 107, 255, 0.2);
+}
+
+.quote-input:hover {
+  white-space: normal !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* SAVE BUTTON RIGHT SIDE */
+.button-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.save-btn {
+  background: linear-gradient(90deg, #9b6bff, #ff7dc0);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(155, 107, 255, 0.3);
+}

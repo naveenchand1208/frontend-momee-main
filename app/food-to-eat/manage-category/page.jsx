@@ -1,0 +1,581 @@
+'use client';
+import './page.css';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import MaterialTable from '@/components/shared/material-table/page';
+import Button from '@/components/shared/button/page';
+import Breadcrumb from '@/components/shared/breadcrumb/page';
+import Input from '@/components/shared/input/page';
+import FileUpload from '@/components/shared/file/page';
+import Checkbox from '@/components/shared/checkbox/page';
+import ColorInput from '@/components/shared/color-input/page';
+import apiRoutes from "@/common/constants/apiRoutes";
+import { apiRequest } from "@/common/api/apiService";
+import { generateMomTypes, objectToFormData } from '@/common/utils/util';
+import { MOM_TYPE } from '@/common/constants/enum';
+import { showSuccess } from '@/common/toast/toastService';
+import CustomDialog from '@/components/shared/dialog/dialog';
+import CommonFilter from '@/components/shared/common-filter/page';
+import ConfirmationDialog from '@/components/shared/confirmation-dialog/confirmation-dialog';
+import { Colors } from '@/common/constants/colorEnum';
+import { hexToRgba } from '@/common/utils/colorUtils';
+export default function Manage_Category() {
+    const initialFormState = {
+        title: '',
+        file: '',
+        color: '#5a03fc',
+        pregMom: false,
+        newMom: false,
+        momTypes: [],
+        status: 'Active',
+    };
+    const router = useRouter();
+    const fetchedRef = useRef(false);
+    const formRef = useRef(null);
+    const [form, setForm] = useState(initialFormState);
+    const [viewform, setViewform] = useState({});
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [categoryList, setCategoryList] = useState([]);
+    const [sortField, setSortField] = useState('');
+    const [sortOrder, setSortOrder] = useState('asc');
+    const [isLoading, setIsLoading] = useState(true);
+    const [buttonLoading, setButtonLoading] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [backLoading, setBackLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [totalDocs, setTotalDocs] = useState(0);
+    const [id, setId] = useState(null);
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [statusLabel, setStatusLabel] = useState('Active/Inactive');
+    const [disableLoadingForEdit, setDisableLoadingForEdit] = useState(false);
+    const [filterForm, setFilterForm] = useState({
+        searchKey: '',
+        status: '',
+        momType: '',
+    });
+    const [indexOpen, setIndexOpen] = useState(false);
+    const [indexForm, setIndexForm] = useState({
+        id: '',
+        index: '',
+    });
+    const breadcrumbItems = [
+        { label: 'Content Management' },
+        { label: 'Foods To Eat', href: '/food-to-eat' },
+        { label: 'Category', href: '/food-to-eat/manage-category' }
+    ];
+    const breadcrumbAction = [
+        // {
+        //     iconPath: '/assets/icons/download-icon.svg',
+        //     type: 'textIcon',
+        //     label: 'Export',
+        //     onClick: () => console.log('Download clicked'),
+        // },
+        {
+            iconPath: '/assets/icons/outlined-filter-icon.svg',
+            type: 'textIcon',
+            label: 'Filter',
+            onClick: () => setFilterOpen(true),
+        },
+        {
+            type: 'statusTabs',
+            onChange: (val) => {
+                if (val === 'All') val = '';
+
+                // setStatusLabel(val);
+
+                const updatedForm = { ...form, status: val };
+                setForm(updatedForm);
+
+                fetchCategories(1, rowsPerPage, updatedForm);
+            }
+        },
+        {
+            label: 'Back',
+            type: 'button',
+            size: 'extraSmall',
+            color: '#fff',
+            backgroundColor: Colors.Primary1,
+            isLoading: backLoading,
+            onClick: () => manageCategory(),
+        },
+    ];
+    const myTableHeaders = [
+        { id: 'file', label: 'Thumbnail', sortable: false },
+        // { id: 'title', label: 'Category Name', sortable: true },
+        {
+            id: 'title',
+            label: 'Category Name',
+            sortable: true,
+            render: (row) => {
+                const catColor = row.color || '#000';
+                return (
+                    <span
+                        style={{
+                            color: catColor,
+                            backgroundColor: hexToRgba(catColor, 0.1),
+                            padding: '4px 12px',
+                            borderRadius: '5px',
+                            display: 'inline-block',
+                            fontWeight: 'bolder',
+                        }}
+                    >
+                        {row.title || 'No category'}
+                    </span>
+                );
+            }
+        },
+        { id: 'momType', label: 'Mom Types', sortable: true },
+        { id: 'status', label: 'Status', sortable: false },
+        { id: 'action', label: 'Action', sortable: false },
+    ];
+    const indexFields = [
+        {
+            type: 'type',
+            name: 'index',
+            placeholder: 'Enter Type',
+            inputType: 'text',
+            value: indexForm.index,
+        }
+    ]
+    const inputFields = [
+        {
+            name: 'searchKey',
+            placeholder: 'search title',
+            inputType: 'text',
+            value: filterForm.searchKey,
+        },
+        // {
+        //     name: 'status',
+        //     label: '',
+        //     placeholder: 'Choose Status',
+        //     inputType: 'autocomplete',
+        //     options: ACTIVE_STATUS,
+        //     value: filterForm.status,
+        // },
+        {
+            name: 'momType',
+            label: '',
+            placeholder: 'Choose Mom type',
+            inputType: 'autocomplete',
+            options: MOM_TYPE,
+            value: filterForm.momType,
+        }
+    ];
+    useEffect(() => {
+        if (fetchedRef.current) return;
+        fetchedRef.current = true;
+        fetchCategories(page + 1, rowsPerPage, { sortField, sortOrder });
+    }, [sortField, sortOrder]);
+    useEffect(() => {
+        return () => {
+            if (form.previewUrl) {
+                URL.revokeObjectURL(form.previewUrl);
+            }
+        };
+    }, [form.previewUrl]);
+    const fetchCategories = async (pageNum = 1, limit = 5, options = {}) => {
+        setIsLoading(true);
+        const payload = {
+            params: {
+                sortField: options.sortField || '',
+                sortOrder: options.sortOrder || 'asc',
+                pagination: 'true',
+                page: pageNum,
+                limit: limit,
+                searchKey: options.searchKey || '',
+                status: options.status || '',
+                momType:
+                    options.momType === 'Preg Mom'
+                        ? 'pregMom'
+                        : options.momType === 'New Mom'
+                            ? 'newMom'
+                            : '',
+            },
+        };
+        try {
+            const data = await apiRequest(apiRoutes.getFoodEatCategoryList, 'POST', payload, router);
+            if (data.response) {
+                setCategoryList(data?.data?.docs);
+                setTotalDocs(data?.data?.totalDocs);
+            }
+        } catch (error) {
+            console.error('Failed to fetch subscriptions:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const handleTableChange = ({ newPage, newRowsPerPage }) => {
+        const finalPage = newPage !== undefined ? newPage : page;
+        const finalRowsPerPage = newRowsPerPage !== undefined ? newRowsPerPage : rowsPerPage;
+
+        if (newRowsPerPage !== undefined) setRowsPerPage(newRowsPerPage);
+        if (newPage !== undefined) setPage(newPage);
+        fetchCategories(finalPage + 1, finalRowsPerPage, { ...form, sortField, sortOrder });
+    };
+    // const handleTableChange = ({ newPage, newRowsPerPage }) => {
+    //     const finalPage = newPage !== undefined ? newPage : page;
+    //     const finalRowsPerPage = newRowsPerPage !== undefined ? newRowsPerPage : rowsPerPage;
+    //     if (newRowsPerPage !== undefined) setRowsPerPage(newRowsPerPage);
+    //     if (newPage !== undefined) setPage(newPage);
+    //     fetchCategories(finalPage + 1, finalRowsPerPage, { sortField, sortOrder, ...filterForm });
+    // };
+    const handleEdit = (row) => {
+        setDisableLoadingForEdit(true);
+        console.log('row', row)
+        setViewform(row)
+        setForm({
+            title: row.title,
+            file: row.file,
+            color: row.color,
+            pregMom: row.momTypes[0] === 'pregMom',
+            newMom: row.momTypes[0] === 'newMom',
+            momTypes: row.momTypes,
+            status: row.status,
+        })
+        setPreviewUrl(row.file)
+        setId(row.id)
+        setIsEdit(true)
+    };
+    const handleIndexChange = async (row) => {
+        console.log('row', row)
+        setIndexOpen(true)
+        setIndexForm((prev) => ({
+            ...prev,
+            id: row.id,
+            index: row.index,
+        }))
+    }
+    const handleDelete = (row) => {
+        console.log('Parent received DELETE action:', row);
+        setViewform(row)
+        setIsDeleteDialogOpen(true)
+    };
+    const handleDeleteCancel = () => {
+        setIsDeleteDialogOpen(false);
+    };
+    const handleDeleteConfirm = async () => {
+        setIsDeleteDialogOpen(false);
+        const payload = { params: { id: viewform.id } }
+        const data = await apiRequest(apiRoutes.deleteFoodEatCategory, 'POST', payload, router);
+        if (data.response) {
+            fetchCategories(page + 1, rowsPerPage, {})
+        }
+    };
+    const manageCategory = () => {
+        setBackLoading(true);
+        router.push('/food-to-eat')
+    }
+    const actionConfig = [
+        { iconName: 'edit-icon', disabled: false, onClick: handleEdit },
+        // { iconName: 'index-change', disabled: false, onClick: handleIndexChange, tooltip: 'index' },
+        // { iconName: 'delete-icon', disabled: false, onClick: handleDelete },
+    ];
+    const handleSortChange = (field, direction) => {
+        setSortField(field);
+        setSortOrder(direction);
+        fetchCategories(page + 1, rowsPerPage, { sortField: field, sortOrder: direction });
+    };
+    const handleCheckboxChange = (key) => (e) => {
+        setForm((prev) => ({
+            ...prev,
+            [key]: e.target.checked,
+        }));
+    };
+    const handleToggleStatus = async (updatedRow) => {
+        setIsLoading(true);
+        const formData = objectToFormData(updatedRow)
+        try {
+            const data = await apiRequest(apiRoutes.updateFoodEatCategory, 'POST', formData, router);
+            fetchCategories(page + 1, rowsPerPage, { sortField, sortOrder, ...filterForm });
+        } catch (error) {
+            console.error('Failed to fetch subscriptions:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const handleClear = () => {
+        setForm(initialFormState);
+        setFormSubmitted(false);
+        setIsEdit(false);
+        setId(null);
+        setViewform({});
+        setPreviewUrl('');
+        if (formRef.current) {
+            formRef.current.reset();
+        }
+    };
+    const handleIndexSubmit = async (filterValues) => {
+        console.log('filterValues', filterValues)
+        if (Object.keys(filterValues) && filterValues.index !== '') {
+            setIndexForm(prev => ({
+                ...prev,
+                id: filterValues.id || '',
+                index: Number(filterValues.index) || '',
+            }));
+            const payload = {
+                params: {
+                    id: filterValues.id,
+                    newIndex: Number(filterValues.index)
+                }
+            }
+            console.log('payload', payload)
+            try {
+                const data = await apiRequest(apiRoutes.updateIndexFoodEatCategory, 'POST', payload, router);
+                if (data.response) {
+                    fetchCategories(page + 1, rowsPerPage, { sortField, sortOrder });
+                    setIndexOpen(false)
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscriptions:', error);
+            }
+        } else {
+            setIndexOpen(false)
+        }
+    }
+    const handleFilterSubmit = (filterValues) => {
+        setFilterOpen(false);
+        setFilterForm({
+            searchKey: filterValues.searchKey || '',
+            status: filterValues.status || '',
+            momType: filterValues.momType || '',
+        });
+
+        setPage(0);
+
+        fetchCategories(1, rowsPerPage, {
+            sortField,
+            sortOrder,
+            ...filterValues
+        });
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setFormSubmitted(true);
+        setButtonLoading(true);
+        if (!form.title || !form.file) {
+            // showError('Invalid Form');
+            setButtonLoading(false);
+            return;
+        }
+        let updateForm = {
+            ...form,
+            momTypes: generateMomTypes(form),
+        };
+        if (isEdit) {
+            const isFileChanged = form.file !== viewform.file;
+
+            updateForm = {
+                ...viewform,
+                ...form,
+                fileChanged: isFileChanged,
+            };
+        }
+        console.log('updateForm', updateForm)
+
+        const formData = objectToFormData(updateForm)
+        manageSubscription(formData);
+    };
+    const manageSubscription = async (formData) => {
+        const action = !isEdit
+            ? apiRoutes.addFoodEatCategory
+            : apiRoutes.updateFoodEatCategory;
+        try {
+            const data = await apiRequest(action, 'POST', formData, router);
+            if (data?.response) {
+                const message = isEdit ? 'Food Category updated successfully!' : 'Food Category added successfully!';
+                showSuccess(message);
+                setForm(initialFormState);
+                formRef.current.reset();
+                setFormSubmitted(false);
+                setButtonLoading(false);
+                setIsEdit(false);
+                setViewform({});
+                setPreviewUrl('')
+                fetchCategories(page + 1, rowsPerPage, {})
+            } else {
+                setFormSubmitted(false);
+                setButtonLoading(false);
+            }
+        } catch (error) {
+            console.error('error', error);
+        }
+    };
+    return (
+        <div className="max-w-4xl mx-auto mt-10">
+            <Breadcrumb
+                items={breadcrumbItems}
+                actionButton={breadcrumbAction}
+            />
+            <div className="row">
+                <div className="col-md-12 col-lg-8">
+                    <MaterialTable
+                        headers={myTableHeaders}
+                        data={categoryList}
+                        actionConfig={actionConfig}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        totalCount={totalDocs}
+                        isLoading={isLoading}
+                        disableLoading={disableLoadingForEdit}
+                        sortConfig={{ [sortField]: sortOrder }}
+                        onSortChange={handleSortChange}
+                        onToggleStatus={handleToggleStatus}
+                        onTableChange={handleTableChange}
+                    />
+                </div>
+                <div
+                    className="col-4 bg-white p-3"
+                    style={{ height: 'max-content', borderRadius: '5px' }}
+                >
+                    <h5>Create Category</h5><hr />
+                    <form ref={formRef} onSubmit={handleSubmit} >
+                        <div className="row">
+                            <div className="col-md-12 mb-1">
+                                <div className="">
+                                    <Input
+                                        placeholder=""
+                                        name="title"
+                                        label="Title"
+                                        value={form.title}
+                                        required={true}
+                                        formSubmitted={formSubmitted}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-12">
+                                <FileUpload
+                                    label="Thumbnail"
+                                    format="image"
+                                    parentFile={previewUrl}
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                    onFileSelect={(file) => {
+                                        const previewUrl = URL.createObjectURL(file);
+                                        setForm({ ...form, file });
+                                        setPreviewUrl(previewUrl)
+                                    }}
+                                />
+                            </div>
+                            <div className="col-md-12  mb-2">
+                                <ColorInput
+                                    label="Color"
+                                    required="true"
+                                    onChange={(color) => setForm({ ...form, color })}
+                                    defaultColor={form.color || '#5a03fc'}
+                                />
+                            </div>
+                            <div className="col-md-12 mb-4">
+                                <label className="common-cursor" style={{ fontSize: '13px', fontWeight: '500' }}>Mom Type</label>
+                                {isEdit ? (
+                                    <span className='ms-5'
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            color: Colors.Primary1
+                                        }}>{viewform.momType === 'newMom' ? 'New Mom' : 'Preg Mom'}</span>
+                                ) : (
+                                    <div className="d-flex justify-content-start gap-3">
+                                        <Checkbox
+                                            name="pregMom"
+                                            label="Preg Mom"
+                                            checked={form.pregMom}
+                                            onChange={handleCheckboxChange('pregMom')}
+                                        />
+                                        <Checkbox
+                                            name="newMom"
+                                            label="New Mom"
+                                            checked={form.newMom}
+                                            onChange={handleCheckboxChange('newMom')}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className='d-flex justify-content-end' style={{ marginLeft: '3%', gap: '5px' }}>
+                            <Button
+                                label="Clear"
+                                type="button"
+                                color="#fff"
+                                backgroundColor={Colors.Primary1}
+                                size='small'
+                                onClick={handleClear}
+                            />
+                            <Button
+                                label={isEdit ? "Update" : "Save"}
+                                type="submit"
+                                color="#fff"
+                                backgroundColor={Colors.Primary2}
+                                size='small'
+                                isLoading={buttonLoading}
+                            />
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <ConfirmationDialog
+                open={isDeleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title='Delete'
+                message="Are you sure you want to delete?"
+                cancelLabel="No"
+                confirmLabel="Yes"
+            />
+            {
+                filterOpen && (
+                    <CustomDialog
+                        open={filterOpen}
+                        onClose={() => setFilterOpen(false)}
+                        title=""
+                        titleColor="#000000"
+                        backgroundColor="#fafcfc"
+                        content={
+                            <CommonFilter
+                                inputFields={inputFields}
+                                initialValues={filterForm}
+                                onSubmit={(formValues) => handleFilterSubmit(formValues)}
+                                onclose={() => setFilterOpen(false)}
+                            />
+                        }
+                        actions={<button onClick={() => setFilterOpen(false)}>Close</button>}
+                        maxWidth="xs"
+                        position="top-left"
+                    />
+
+                )
+            }
+            {
+                indexForm && (
+                    <CustomDialog
+                        open={indexOpen}
+                        onClose={() => setIndexOpen(false)}
+                        title=""
+                        titleColor="#000000"
+                        backgroundColor="#fafcfc"
+                        content={
+                            <CommonFilter
+                                inputFields={indexFields}
+                                initialValues={indexForm}
+                                onSubmit={(formValues) => handleIndexSubmit(formValues)}
+                                onclose={() => handleIndexSubmit({})}
+                            />
+                        }
+                        actions={
+                            <button type="button" onClick={() => setIndexOpen(false)}>
+                                Close
+                            </button>
+                        }
+                        maxWidth="xs"
+                        position="top-left"
+                    />
+                )
+            }
+        </div>
+    )
+}
+
+

@@ -1,0 +1,32 @@
+.status-tab-group {
+  display: inline-flex;
+  border: 1px solid #3b82f6; 
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 12px;
+  height: 25px;
+}
+
+.status-tab {
+  padding: 3px 12px;
+  background-color: white;
+  color: #3b82f6;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.status-tab + .status-tab {
+  border-left: 1px solid #93c5fd; 
+}
+
+.status-tab:hover {
+  background-color: #dbeafe; 
+}
+
+.status-tab.selected {
+  background-color: #0065F8;
+  color: white;
+}

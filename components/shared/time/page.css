@@ -1,0 +1,6 @@
+/* Hide default time picker icon */
+.custom-time-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+

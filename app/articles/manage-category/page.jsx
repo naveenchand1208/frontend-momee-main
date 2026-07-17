@@ -1,0 +1,600 @@
+'use client';
+import './page.css';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import MaterialTable from '@/components/shared/material-table/page';
+import Button from '@/components/shared/button/page';
+import Breadcrumb from '@/components/shared/breadcrumb/page';
+import Input from '@/components/shared/input/page';
+import FileUpload from '@/components/shared/file/page';
+import RadioGroup from '@/components/shared/radio/page';
+import ColorInput from '@/components/shared/color-input/page';
+import apiRoutes from "@/common/constants/apiRoutes";
+import { apiRequest } from "@/common/api/apiService";
+import { generateMomTypes, objectToFormData } from '@/common/utils/util';
+import { ACTIVE_STATUS, MOM_TYPE } from '@/common/constants/enum';
+import CustomDialog from '@/components/shared/dialog/dialog';
+import CommonFilter from '@/components/shared/common-filter/page';
+import ConfirmationDialog from '@/components/shared/confirmation-dialog/confirmation-dialog';
+import { Colors } from '@/common/constants/colorEnum';
+import { hexToRgba } from '@/common/utils/colorUtils';
+export default function Manage_Category() {
+    const initialFormState = {
+        title: '',
+        file: '',
+        color: '#5a03fc',
+        pregMom: false,
+        newMom: false,
+        momTypes: [],
+        status: 'Active',
+    };
+    const router = useRouter();
+    const fetchedRef = useRef(false);
+    const formRef = useRef(null);
+    const [id, setId] = useState(null);
+    const [form, setForm] = useState(initialFormState);
+    const [viewform, setViewform] = useState({});
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [categoryList, setCategoryList] = useState([]);
+    const [sortField, setSortField] = useState('');
+    const [sortOrder, setSortOrder] = useState('asc');
+    const [isLoading, setIsLoading] = useState(true);
+    const [buttonLoading, setButtonLoading] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [backLoading, setBackLoading] = useState(false);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [totalDocs, setTotalDocs] = useState(0);
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [statusLabel, setStatusLabel] = useState('Active/Inactive');
+    const [disableLoadingForEdit, setDisableLoadingForEdit] = useState(false);
+    const [filterForm, setFilterForm] = useState({
+        searchKey: '',
+        status: '',
+        momType: '',
+        dateRange: { fromDate: '', toDate: '' },
+    });
+    const [indexOpen, setIndexOpen] = useState(false);
+    const [indexForm, setIndexForm] = useState({
+        id: '',
+        index: '',
+    });
+    const breadcrumbItems = [
+        { label: 'Content Management', href: '/articles' },
+        { label: 'Article Category', href: '/articles/manage-category' }
+    ];
+    const breadcrumbAction = [
+        // {
+        //     iconPath: '/assets/icons/download-icon.svg',
+        //     type: 'textIcon',
+        //     label: 'Export',
+        //     onClick: () => console.log('Download clicked'),
+        // },
+        {
+            iconPath: '/assets/icons/outlined-filter-icon.svg',
+            type: 'textIcon',
+            label: 'Filter',
+            onClick: () => setFilterOpen(true),
+        },
+        {
+            type: 'statusTabs',
+            onChange: (val) => {
+                if (val === 'All') {
+                    setForm((prev) => ({ ...prev, status: '' }));
+                    const filters = { ...form };
+                    delete filters.status;
+                    fetchCategories(1, 10, filters);
+                    setStatusLabel('Active/Inactive');
+                } else {
+                    setForm((prev) => ({ ...prev, status: val }));
+                    fetchCategories(1, 10, { ...form, status: val });
+                    setStatusLabel(val);
+                }
+            },
+        },
+        {
+            label: 'Back',
+            type: 'button',
+            size: 'extraSmall',
+            color: '#fff',
+            backgroundColor: Colors.Primary1,
+            isLoading: backLoading,
+            onClick: () => manageCategory(),
+        },
+    ]
+    const momTypeOptions = [
+        { label: 'Preg Mom', value: 'pregMom' },
+        { label: 'New Mom', value: 'newMom' },
+    ];
+    const myTableHeaders = [
+        { id: 'file', label: 'Thumbnail', sortable: false },
+        // { id: 'title', label: 'Category Name', sortable: true },
+        {
+            id: 'title',
+            label: 'Category Name',
+            sortable: true,
+            render: (row) => {
+                const color = row.color || '#000';
+                return (
+                    <span
+                        style={{
+                            color: color,
+                            backgroundColor: hexToRgba(color, 0.1),
+                            padding: '4px 12px',
+                            borderRadius: '5px',
+                            display: 'inline-block',
+                            fontWeight: 'bolder',
+                        }}
+                    >
+                        {row.title || 'No category'}
+                    </span>
+                );
+            }
+        },
+        { id: 'momType', label: 'Mom Types', sortable: true },
+        { id: 'createdAt', label: 'Created Date', sortable: false },
+        { id: 'status', label: 'Status', sortable: false },
+        { id: 'action', label: 'Action', sortable: false },
+    ];
+    const indexFields = [
+        {
+            type: 'number',
+            name: 'index',
+            placeholder: 'Enter Type',
+            inputType: 'text',
+            value: indexForm.index,
+        }
+    ]
+    const inputFields = [
+        {
+            name: 'searchKey',
+            placeholder: 'search category name',
+            inputType: 'text',
+            value: filterForm.searchKey,
+        },
+        // {
+        //     name: 'status',
+        //     label: '',
+        //     placeholder: 'Choose Status',
+        //     inputType: 'autocomplete',
+        //     options: ACTIVE_STATUS,
+        //     value: filterForm.status,
+        // },
+        {
+            name: 'momType',
+            label: '',
+            placeholder: 'Choose Mom type',
+            inputType: 'autocomplete',
+            options: MOM_TYPE,
+            value: filterForm.momType,
+        },
+        {
+            name: 'dateRange',
+            label: '',
+            placeholder: 'Choose dateRange',
+            inputType: 'dateRange',
+            value: { fromDate: '', toDate: '' },
+        },
+    ];
+    useEffect(() => {
+        if (fetchedRef.current) return;
+        fetchedRef.current = true;
+        fetchCategories(page + 1, rowsPerPage, { sortField, sortOrder });
+    }, [sortField, sortOrder]);
+    useEffect(() => {
+        return () => {
+            if (form.previewUrl) {
+                URL.revokeObjectURL(form.previewUrl);
+            }
+        };
+    }, [form.previewUrl]);
+    const handleMomTypeChange = async (e) => {
+        const value = e.target.value;
+        setForm(prev => ({
+            ...prev,
+            momType: value,
+        }));
+        setViewform(prev => ({
+            ...prev,
+            momType: value,
+        }));
+    };
+    const fetchCategories = async (pageNum = 1, limit = 5, options = {}) => {
+        setIsLoading(true);
+        const formatDate = (date) =>
+            date ? new Date(date).toISOString().split('T')[0] : '';
+        const payload = {
+            params: {
+                sortField: options.sortField || '',
+                sortOrder: options.sortOrder || 'asc',
+                pagination: 'true',
+                page: pageNum,
+                limit: limit,
+                createdAt: formatDate(options.createdAt, 'DD MMM YYYY'),
+                status: options.status || '',
+                searchKey: options.searchKey || '',
+                momType:
+                    options.momType === 'Preg Mom'
+                        ? 'pregMom'
+                        : options.momType === 'New Mom'
+                            ? 'newMom'
+                            : '',
+                fromDate: formatDate(options.dateRange?.fromDate),
+                toDate: formatDate(options.dateRange?.toDate),
+            },
+        };
+        try {
+            const data = await apiRequest(apiRoutes.getArticlesCategoryList, 'POST', payload, router);
+            if (data.response) {
+                const updatedDocs = data?.data?.docs.map(doc => ({
+                    ...doc,
+                    createdAt: formatDate(doc.createdAt)
+                }));
+                setCategoryList(updatedDocs);
+                setTotalDocs(data?.data?.totalDocs);
+            }
+        } catch (error) {
+            console.error('Failed to fetch subscriptions:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const handleTableChange = ({ newPage, newRowsPerPage }) => {
+        const finalPage = newPage !== undefined ? newPage : page;
+        const finalRowsPerPage = newRowsPerPage !== undefined ? newRowsPerPage : rowsPerPage;
+        if (newRowsPerPage !== undefined) setRowsPerPage(newRowsPerPage);
+        if (newPage !== undefined) setPage(newPage);
+        fetchCategories(finalPage + 1, finalRowsPerPage, { ...form, sortField, sortOrder });
+    };
+    const handleEdit = (row) => {
+        setDisableLoadingForEdit(true);
+        console.log('row', row)
+        setViewform(row)
+        setForm({
+            title: row.title,
+            file: row.file,
+            color: row.color,
+            pregMom: row.momTypes[0] === 'pregMom',
+            newMom: row.momTypes[0] === 'newMom',
+            momTypes: row.momTypes,
+            status: row.status,
+        })
+        setPreviewUrl(row.file)
+        setId(row.id)
+        setIsEdit(true)
+    };
+    const handleIndexChange = async (row) => {
+        console.log('row', row)
+        setIndexOpen(true)
+        setIndexForm((prev) => ({
+            ...prev,
+            id: row.id,
+            index: row.index,
+        }))
+    }
+    const handleDelete = (row) => {
+        console.log('Parent received DELETE action:', row);
+        setViewform(row)
+        setIsDeleteDialogOpen(true)
+    };
+    const handleDeleteCancel = () => {
+        setIsDeleteDialogOpen(false);
+    };
+    const handleDeleteConfirm = async () => {
+        setIsDeleteDialogOpen(false);
+        const payload = { params: { id: viewform.id } }
+        const data = await apiRequest(apiRoutes.deleteArticlesCategory, 'POST', payload, router);
+        if (data.response) {
+            fetchCategories(page + 1, rowsPerPage, {})
+        }
+    };
+    const manageCategory = () => {
+        setBackLoading(true);
+        router.push('/articles')
+    }
+    const actionConfig = [
+        { iconName: 'edit-icon', disabled: false, onClick: handleEdit },
+        // { iconName: 'index-change', disabled: false, onClick: handleIndexChange, tooltip: 'index' },
+        // { iconName: 'delete-icon', disabled: false, onClick: handleDelete },
+    ];
+    const handleSortChange = (field, direction) => {
+        setSortField(field);
+        setSortOrder(direction);
+        fetchCategories(page + 1, rowsPerPage, { sortField: field, sortOrder: direction });
+    };
+    const handleClear = () => {
+        setForm(initialFormState);
+        setFormSubmitted(false);
+        setIsEdit(false);
+        setId(null);
+        setViewform({});
+        setPreviewUrl('');
+        if (formRef.current) {
+            formRef.current.reset();
+        }
+    };
+    const handleCheckboxChange = (key) => (e) => {
+        setForm((prev) => ({
+            ...prev,
+            [key]: e.target.checked,
+        }));
+    };
+    const handleToggleStatus = async (updatedRow) => {
+        setIsLoading(true);
+        const formData = objectToFormData(updatedRow)
+        try {
+            const data = await apiRequest(apiRoutes.updateArticlesCategory, 'POST', formData, router);
+            fetchCategories()
+        } catch (error) {
+            console.error('Failed to fetch subscriptions:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const handleIndexSubmit = async (filterValues) => {
+        console.log('filterValues', filterValues)
+        if (Object.keys(filterValues) && filterValues.index !== '') {
+            setIndexForm(prev => ({
+                ...prev,
+                id: filterValues.id || '',
+                index: Number(filterValues.index) || '',
+            }));
+            const payload = {
+                params: {
+                    // ...indexForm,
+                    id: filterValues.id,
+                    newIndex: Number(filterValues.index)
+                }
+            }
+            console.log('payload', payload)
+            try {
+                const data = await apiRequest(apiRoutes.updateIndexArticlesCategory, 'POST', payload, router);
+                if (data.response) {
+                    // setCategoryList(data?.data?.docs);
+                    // setTotalDocs(data?.data?.totalDocs);
+                    fetchCategories(page + 1, rowsPerPage, { sortField, sortOrder });
+                    setIndexOpen(false)
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscriptions:', error);
+            }
+        } else {
+            setIndexOpen(false)
+        }
+    }
+    const handleFilterSubmit = (filterValues) => {
+        setFilterOpen(false)
+        setPage(0);
+        setFilterForm(prev => ({
+            ...prev,
+            searchKey: filterValues.searchKey || '',
+            status: filterValues.status || '',
+            momType: filterValues.momType || '',
+            dateRange: filterValues.dateRange || { fromDate: '', toDate: '' },
+        }));
+        fetchCategories(page, rowsPerPage, { sortField, sortOrder, ...filterValues },);
+    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setFormSubmitted(true);
+        setButtonLoading(true);
+        if (!form.title || !form.file) {
+            // showError('Invalid Form');
+            setButtonLoading(false);
+            return;
+        }
+        let updateForm = {
+            ...form,
+            momTypes: generateMomTypes(form),
+        };
+        if (isEdit) {
+            const isFileChanged = form.file !== viewform.file;
+
+            updateForm = {
+                ...viewform,
+                ...form,
+                fileChanged: isFileChanged,
+            };
+        }
+        console.log('updateForm', updateForm)
+
+        const formData = objectToFormData(updateForm)
+        manageSubscription(formData);
+    };
+    const manageSubscription = async (formData) => {
+        const action = !isEdit
+            ? apiRoutes.addArticlesCategory
+            : apiRoutes.updateArticlesCategory;
+        try {
+            const data = await apiRequest(action, 'POST', formData, router);
+            if (data?.response) {
+                console.log('subscription', data);
+                setForm(initialFormState);
+                formRef.current.reset();
+                setIsEdit(false);
+                setViewform({});
+                setFormSubmitted(false);
+                setButtonLoading(false);
+                setPreviewUrl('')
+                fetchCategories(page + 1, rowsPerPage, {})
+            } else {
+                setFormSubmitted(false);
+                setButtonLoading(false);
+            }
+        } catch (error) {
+            console.error('error', error);
+        }
+    };
+    return (
+        <div className="max-w-4xl mx-auto mt-10">
+            <Breadcrumb
+                items={breadcrumbItems}
+                actionButton={breadcrumbAction}
+            />
+            <div className="row">
+                <div className="col-md-12 col-lg-8">
+                    <MaterialTable
+                        headers={myTableHeaders}
+                        data={categoryList}
+                        actionConfig={actionConfig}
+                        page={page}
+                        rowsPerPage={rowsPerPage}
+                        totalCount={totalDocs}
+                        disableLoading={disableLoadingForEdit} // pass here
+                        isLoading={isLoading}
+                        sortConfig={{ [sortField]: sortOrder }}
+                        onSortChange={handleSortChange}
+                        onToggleStatus={handleToggleStatus}
+                        onTableChange={handleTableChange}
+                    />
+                </div>
+                <div
+                    className="col-4 bg-white p-3"
+                    style={{ height: 'max-content', borderRadius: '5px' }}
+                >
+                    <h5>Create Category</h5><hr />
+                    <form ref={formRef} onSubmit={handleSubmit} >
+                        <div className="row">
+                            <div className="col-md-12 mb-1">
+                                <div className="">
+                                    <Input
+                                        placeholder=""
+                                        name="title"
+                                        label="Title"
+                                        value={form.title}
+                                        required={true}
+                                        formSubmitted={formSubmitted}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-12">
+                                <FileUpload
+                                    label="Thumbnail"
+                                    format="image"
+                                    parentFile={previewUrl}
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                    onFileSelect={(file) => {
+                                        const previewUrl = URL.createObjectURL(file);
+                                        setForm({ ...form, file });
+                                        setPreviewUrl(previewUrl)
+                                    }}
+                                />
+                            </div>
+                            <div className="col-md-12  mb-2">
+                                <ColorInput
+                                    label="Color"
+                                    required="true"
+                                    onChange={(color) => setForm({ ...form, color })}
+                                    defaultColor={form.color || '#5a03fc'}
+                                />
+                            </div>
+                            <div className="col-md-12 mb-4">
+                                <label className="" style={{ fontSize: '13px', fontWeight: '500' }}>Mom Type</label>
+                                {isEdit ? (
+                                    <span className='ms-5'
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            color: Colors.Primary1
+                                        }}>{viewform.momType === 'newMom' ? 'New Mom' : 'Preg Mom'}</span>
+                                ) : (
+                                    <div className="d-flex justify-content-start gap-3">
+                                        <RadioGroup
+                                            name="momType"
+                                            options={momTypeOptions}
+                                            selectedValue={form.momType}
+                                            onChange={handleMomTypeChange}
+                                            required
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className='d-flex justify-content-end' style={{ marginLeft: '3%', gap: '5px' }}>
+                            <Button
+                                label="Clear"
+                                type="button"
+                                color="#fff"
+                                backgroundColor={Colors.Primary1}
+                                size='small'
+                                onClick={handleClear}
+                            />
+                            <Button
+                                label={isEdit ? "Update" : "Save"}
+                                type="submit"
+                                color="#fff"
+                                backgroundColor={Colors.Primary2}
+                                size='small'
+                                isLoading={buttonLoading}
+                            />
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            <ConfirmationDialog
+                open={isDeleteDialogOpen}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                title='Delete'
+                message="Are you sure you want to delete?"
+                cancelLabel="No"
+                confirmLabel="Yes"
+            />
+            {
+                filterOpen && (
+                    <CustomDialog
+                        open={filterOpen}
+                        onClose={() => setFilterOpen(false)}
+                        title=""
+                        titleColor="#000000"
+                        backgroundColor="#fafcfc"
+                        content={
+                            <CommonFilter
+                                inputFields={inputFields}
+                                initialValues={filterForm}
+                                onSubmit={(formValues) => handleFilterSubmit(formValues)}
+                                onclose={() => setFilterOpen(false)}
+                            />
+                        }
+                        actions={<button onClick={() => setFilterOpen(false)}>Close</button>}
+                        maxWidth="xs"
+                        position="top-left"
+                    />
+                )
+            }
+            {
+                indexForm && (
+                    <CustomDialog
+                        open={indexOpen}
+                        onClose={() => setIndexOpen(false)}
+                        title=""
+                        titleColor="#000000"
+                        backgroundColor="#fafcfc"
+                        content={
+                            <CommonFilter
+                                inputFields={indexFields}
+                                initialValues={indexForm}
+                                onSubmit={(formValues) => handleIndexSubmit(formValues)}
+                                onclose={() => handleIndexSubmit({})}
+                            />
+                        }
+                        actions={
+                            <button type="button" onClick={() => setIndexOpen(false)}>
+                                Close
+                            </button>
+                        }
+                        maxWidth="xs"
+                        position="top-left"
+                    />
+                )
+            }
+        </div>
+    )
+}
+
+

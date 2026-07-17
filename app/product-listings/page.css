@@ -1,0 +1,28 @@
+.product-card {
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 1px;
+  left: 160px;
+  width: 40px;
+  height: 40px;
+  background-color: #e6f9f6;
+  color: #f78db5;
+  font-size: 14px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.08);
+}

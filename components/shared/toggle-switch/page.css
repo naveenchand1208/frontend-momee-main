@@ -1,0 +1,57 @@
+
+.css-17jyosd-MuiSwitch-thumb{
+    background-color: '#000' !important;
+}
+
+.mui-switch {
+    position: relative;
+    display: inline-block;
+    width: 35px;
+    height: 14px;
+  }
+  
+  .mui-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .mui-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ff9e9e;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  
+  .mui-slider::before {
+    content: "";
+    background-color: #ff0000;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    transition: all .4s;
+    position: absolute;
+    bottom: -3.1px;
+    left: 0px;
+  }
+  
+  /* Checked state */
+  .mui-switch input:checked + .mui-slider {
+    background-color: #7fbf7f;
+  }
+  
+  .mui-switch input:checked + .mui-slider::before {
+    transform: translateX(16px);
+    background-color: #008000;
+    position: absolute;
+    /* left: 8px; */
+  }
+  
+
+
+

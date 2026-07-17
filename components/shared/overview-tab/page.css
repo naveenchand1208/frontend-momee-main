@@ -1,0 +1,45 @@
+.fs-15{
+   font-size:13px ; 
+}
+.text-fade{
+    font-size: 13px;
+    /* display: inline-block; */
+    color: #6c757d;
+}
+
+.box-title{
+    font-size: 1.2rem;
+    display: inline-block;
+    margin: 0;
+}
+
+.box-body {
+    border-radius: 10px;
+    height:65px;
+    color: white;
+    text-align: center; 
+    padding: 10px; 
+    background-color: #f78db5; 
+    font-size: 15px;
+    margin-top: 20px;
+  }
+  
+  .table td {
+  color: black; /* Ensure values are black */
+}
+
+.table td {
+  color: #6c757d; /* Grey color for the headings */
+  font-size: 14px;
+}
+
+.table .text-fade {
+  color: #6c757d; /* Applying text-fade gray color to headings */
+}
+
+.text-mute{
+    font-size: 14px;
+    display: inline-block;
+    color: #6c757d;
+}
+

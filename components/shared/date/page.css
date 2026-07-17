@@ -1,0 +1,5 @@
+/* Hide default date icon in most browsers */
+.custom-date-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    display: none;
+}

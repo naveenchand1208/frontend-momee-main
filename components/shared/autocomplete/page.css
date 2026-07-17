@@ -1,0 +1,26 @@
+.list-values {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    overflow: auto;
+    transition: background 0.2s;
+}
+
+.list-values:hover {
+    background-color: #f51aac !important;
+    /* Hover background */
+    color: #000;
+}
+
+.list-values.selected {
+    background-color: #007bff;
+    /* Selected background */
+    color: white;
+    font-weight: bold;
+}
+
+li:hover {
+    background-color: #f51aac !important;
+    /* Hover background */
+    color: #000;
+}

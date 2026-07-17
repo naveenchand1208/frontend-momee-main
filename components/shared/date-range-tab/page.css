@@ -1,0 +1,53 @@
+/* .status-tab-group-wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: fit-content;
+  z-index: 10;
+} */
+
+.status-tab-group {
+  display: flex;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 12px;
+  height: 25px;
+  background-color: white;
+  z-index: 2;
+}
+
+.status-tab {
+  padding: 3px 12px;
+  background-color: white;
+  color: #3b82f6;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.status-tab+.status-tab {
+  border-left: 1px solid #93c5fd;
+}
+
+.status-tab:hover {
+  background-color: #dbeafe;
+}
+
+.status-tab.selected {
+  background-color: #0065F8;
+  color: white;
+}
+
+.status-tab-group-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.custom-datepicker-wrapper {
+  padding: 0.5rem;
+}

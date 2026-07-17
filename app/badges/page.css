@@ -1,0 +1,16 @@
+.badge-week {
+    background: max-content;
+    display: inline-flex;
+    justify-content: end;
+    text-align: center;
+    background: yellow;
+    color: #000;
+    padding: 3px 5px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-weight: 900
+}
+
+.custom-dialog-title {
+  font-size: 13px !important;
+}

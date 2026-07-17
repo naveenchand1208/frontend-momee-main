@@ -1,0 +1,70 @@
+.custom-btn {
+  background-color: #eb9f9f;
+  /* Bootstrap blue */
+  color: white;
+
+}
+
+.custom-btn:hover {
+  background-color: #3e926f;
+  /* darker blue on hover */
+}
+
+.custom-btn:disabled {
+  background-color: #62c49b; /* Light gray when disabled */
+}
+.text {
+  color: #eb9f9f;
+  font-size: 24;
+}
+
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  /* Remove default appearance */
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #eb9f9f;
+  /* Blue border */
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Style when checkbox is checked */
+/* input[type="checkbox"]:checked {} */
+
+      .box{
+        width: 46%;
+      }
+      
+      input[type="checkbox"] {
+        -webkit-appearance: none; /* Remove default appearance */
+        -moz-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #eb9f9f; /* Blue border */
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+      }
+      
+      /* Style when checkbox is checked */
+      /* input[type="checkbox"]:checked {
+       
+      } */
+      
+      /* Optional: Add a checkmark */
+      input[type="checkbox"]:checked::before {
+        content: "✔"; /* Unicode checkmark */
+        color: #da7070;
+        position: absolute;
+        top: -4px;
+        left: 1px;
+        font-size: 16px;
+      }
+
+      

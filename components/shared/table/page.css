@@ -1,0 +1,8 @@
+.waves-effect1{
+    background-color: #da7070 ;
+    color: white;
+}
+
+.waves-effect1:hover {
+    background-color: #3e926f;  /* darker blue on hover */
+  }

@@ -1,0 +1,29 @@
+.breadcrumb-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 16px;
+    margin-bottom: 28px !important;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+  }
+  
+  .breadcrumb-path {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .breadcrumb-link {
+    text-decoration: none;
+    color: #212529;
+  }
+  
+.breadcrumb-action {
+    display: flex;
+    align-items: center;
+  }
+  

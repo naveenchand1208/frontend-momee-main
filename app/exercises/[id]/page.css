@@ -1,0 +1,17 @@
+.table th,
+.table td {
+  text-align: center;
+}
+
+.table td {
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.table img {
+  border-radius: 4px;
+}
+
+.table th {
+  font-size: 13px;
+}
