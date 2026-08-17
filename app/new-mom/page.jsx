@@ -41,6 +41,7 @@ export default function NewMom() {
     subscribed: '',
     plan: '',
     month: '',
+    joinedDate: { fromDate: '', toDate: '' },
   });
   const router = useRouter();
   const fetchedRef = useRef(false);
@@ -125,7 +126,14 @@ export default function NewMom() {
       inputType: 'autocomplete',
       options: months,
       value: form.month,
-    }
+    },
+    {
+      name: 'joinedDate',
+      label: '',
+      placeholder: 'Choose joined date',
+      inputType: 'dateRange',
+      value: form.joinedDate,
+    },
   ];
   useEffect(() => {
     const month = getMonths();
@@ -256,15 +264,15 @@ export default function NewMom() {
       // onDropdownChange: handleInactiveRangeChange,
     },
   ]
-  const fetchUsers = async (pageNum = handleToggleStatus1, limit = 5, options = {}) => {
+  const fetchUsers = async (pageNum = 1, limit = 5, options = {}) => {
     setIsLoading(true);
+    const toIsoDate = (date) =>
+      date ? new Date(date).toISOString().split('T')[0] : '';
     const payload = {
       params: {
         sortField: options.sortField || '',
         sortOrder: options.sortOrder || 'asc',
         pagination: 'true',
-        page: '1',
-        limit: '5',
         page: pageNum,
         limit: limit,
         momType: "newMom",
@@ -272,6 +280,8 @@ export default function NewMom() {
         status: options.status || '',
         month: options.month || '',
         plan: options.plan || '',
+        fromDate: toIsoDate(options.joinedDate?.fromDate),
+        toDate: toIsoDate(options.joinedDate?.toDate),
         subscribed:
           options.subscribed === 'Subscribed'
             ? 'true'
@@ -342,7 +352,9 @@ export default function NewMom() {
     if (isDownloadingRef.current) return;
     isDownloadingRef.current = true;
     try {
-      const { plan, month, searchKey, subscribed, ...rest } = form;
+      const { plan, month, searchKey, subscribed, joinedDate, ...rest } = form;
+      const toIsoDate = (date) =>
+        date ? new Date(date).toISOString().split('T')[0] : '';
       const payload = {
         params: {
           ...rest,
@@ -351,6 +363,8 @@ export default function NewMom() {
           month: month,
           searchKey: searchKey,
           subscribed: subscribed,
+          fromDate: toIsoDate(joinedDate?.fromDate),
+          toDate: toIsoDate(joinedDate?.toDate),
         }
       };
       await apiRequest(apiRoutes.userExport, 'POST', payload, router, 'blob', 'newMom.xlsx');
@@ -375,6 +389,7 @@ export default function NewMom() {
       subscribed: filterValues.subscribed || '',
       plan: filterValues.plan || '',
       month: filterValues.month || '',
+      joinedDate: filterValues.joinedDate || { fromDate: '', toDate: '' },
     }));
     fetchUsers(page, rowsPerPage, { sortField, sortOrder, ...filterValues, plan: planId, },);
   }

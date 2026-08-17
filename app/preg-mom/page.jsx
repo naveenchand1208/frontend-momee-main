@@ -44,6 +44,7 @@ export default function PreqMom() {
     subscribed: '',
     plan: '',
     week: '',
+    joinedDate: { fromDate: '', toDate: '' },
   });
   const handleView = (row) => {
     router.push(`/preg-mom/${row.id}`);
@@ -222,7 +223,14 @@ export default function PreqMom() {
       inputType: 'autocomplete',
       options: weeks,
       value: form.week,
-    }
+    },
+    {
+      name: 'joinedDate',
+      label: '',
+      placeholder: 'Choose joined date',
+      inputType: 'dateRange',
+      value: form.joinedDate,
+    },
   ];
   useEffect(() => {
     const week = getWeeks();
@@ -295,6 +303,8 @@ export default function PreqMom() {
   };
   const fetchUsers = async (pageNum = 1, limit = 5, options = {}) => {
     setIsLoading(true);
+    const toIsoDate = (date) =>
+      date ? new Date(date).toISOString().split('T')[0] : '';
     const payload = {
       params: {
         sortField: options.sortField || '',
@@ -307,6 +317,8 @@ export default function PreqMom() {
         status: options.status || '',
         plan: options.plan || '',
         week: options.week || '',
+        fromDate: toIsoDate(options.joinedDate?.fromDate),
+        toDate: toIsoDate(options.joinedDate?.toDate),
         subscribed:
           options.subscribed === 'Subscribed'
             ? 'true'
@@ -384,9 +396,11 @@ export default function PreqMom() {
     if (isDownloadingRef.current) return;
     isDownloadingRef.current = true;
     try {
-      const { plan, week, searchKey, subscribed, ...rest } = form;
+      const { plan, week, searchKey, subscribed, joinedDate, ...rest } = form;
       const selectedWeek = weeks.find(w => w.label === week);
       const weekId = selectedWeek?.value;
+      const toIsoDate = (date) =>
+        date ? new Date(date).toISOString().split('T')[0] : '';
       const payload = {
         params: {
           ...rest,
@@ -395,6 +409,8 @@ export default function PreqMom() {
           week: weekId,
           searchKey: searchKey,
           subscribed: subscribed,
+          fromDate: toIsoDate(joinedDate?.fromDate),
+          toDate: toIsoDate(joinedDate?.toDate),
         }
       };
       await apiRequest(apiRoutes.userExport, 'POST', payload, router, 'blob', 'pregMom.xlsx');
@@ -419,6 +435,7 @@ export default function PreqMom() {
       subscribed: filterValues.subscribed || '',
       plan: filterValues.plan,
       week: filterValues.week || '',
+      joinedDate: filterValues.joinedDate || { fromDate: '', toDate: '' },
     }));
     console.log(filterValues);
     fetchUsers(page, rowsPerPage, { sortField, sortOrder, ...filterValues, plan: planId, week: weekId },);
