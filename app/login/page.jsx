@@ -39,16 +39,34 @@ export default function Login() {
 		};
 		try {
 			const data = await apiRequest(apiRoutes.login, 'POST', payload);
-			if (data.response && data.data.token) {
-				dispatch(loginSuccess({
-					token: data.data.token,
-					user: { userName }
-				}));
+			const authToken =
+					data?.data?.token ||
+					data?.data?._doc?.token;
 
-				setToken(data.data.token);
-				showSuccess(data.message)
-				router.push('/');
-			} else {
+				if (data?.response && authToken) {
+					dispatch(
+						loginSuccess({
+							token: authToken,
+							user: { userName }
+						})
+					);
+
+					setToken(authToken);
+					showSuccess(data.message);
+
+					router.replace('/');
+				}
+			// if (data.response && data.data.token) {
+			// 	dispatch(loginSuccess({
+			// 		token: data.data.token,
+			// 		user: { userName }
+			// 	}));
+
+			// 	setToken(data.data.token);
+			// 	showSuccess(data.message)
+			// 	router.push('/');
+			// }
+			 else {
 				// alert('Login failed. Please try again.');
 			}
 		} catch (error) {
