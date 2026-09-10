@@ -15,6 +15,7 @@ export default function Input({
     formSubmitted = false,
     disabled = false,
     commonFilter = false,
+    tamilKeyboard = false,
 }) {
     const [touched, setTouched] = useState(false);
     useEffect(() => {

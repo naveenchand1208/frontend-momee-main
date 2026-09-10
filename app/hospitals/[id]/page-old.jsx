@@ -19,17 +19,11 @@ import { CircularProgress } from '@mui/material';
 import Textarea from '@/components/shared/textarea/page';
 export default function AddHospital() {
     const [form, setForm] = useState({
-        // English fields
         name: '',
-        address: '',
-
-        // Tamil fields
         nameTa: '',
-        addressTa: '',
-
-        // Existing fields
         status: 'Active',
         file: '',
+        address: '',
         mobile: '',
         email: '',
         latitude: '',
@@ -55,7 +49,6 @@ export default function AddHospital() {
     const [typeOptions, setTypeOptions] = useState([]);
     const [deptOptions, setDeptOptions] = useState([]);
     const [facilityInput, setFacilityInput] = useState('');
-    const [facilityInputTa, setFacilityInputTa] = useState('');
     const [doctorDialogOpen, setDoctorDialogOpen] = useState(false);
     const [typeDialogOpen, setTypeDialogOpen] = useState(false);
     const [departmentDialogOpen, setDepartmentDialogOpen] = useState(false);
@@ -122,24 +115,16 @@ export default function AddHospital() {
         fetchDeptOptions();
     }, []);
     const handleAddFacility = () => {
-        if (!facilityInput.trim() || !facilityInputTa.trim()) {
-            showError('Please enter both English and Tamil facility descriptions');
-            return;
-        }
-
+        if (!facilityInput.trim()) return;
         const newFacility = {
             id: form.facilities.length > 0 ? form.facilities[form.facilities.length - 1].id + 1 : 1,
             decription: facilityInput.trim(),
-            decriptionTa: facilityInputTa.trim(),
         };
-
         setForm((prev) => ({
             ...prev,
             facilities: [...prev.facilities, newFacility],
         }));
-
         setFacilityInput('');
-        setFacilityInputTa('');
     }
     const handleDeleteFacility = (idToDelete) => {
         const updatedFacilities = form.facilities
@@ -156,10 +141,8 @@ export default function AddHospital() {
     const AddDoctorForm = ({ deptOptions, onSubmit, onClose, existingDoctor = null }) => {
         const [form, setForm] = useState(existingDoctor || {
             name: '',
-            nameTa: '',
             departmentIds: [],
             bio: '',
-            bioTa: '',
         });
         const [formSubmitted, setFormSubmitted] = useState(false);
         useEffect(() => {
@@ -168,10 +151,8 @@ export default function AddHospital() {
         const handleAddOrEdit = () => {
             setFormSubmitted(true);
             if (!form.name.trim()) return;
-            if (!form.nameTa.trim()) return;
             if (form.departmentIds.length === 0) return;
             if (!form.bio.trim()) return;
-            if (!form.bioTa.trim()) return;
             onSubmit(form);
             onClose();
         };
@@ -184,19 +165,7 @@ export default function AddHospital() {
                         value={form.name}
                         required={true}
                         formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-2">
-                    <Input
-                        label="Tamil Doctor Name"
-                        placeholder="தமிழில் உள்ளிடவும்"
-                        name="nameTa"
-                        tamilKeyboard={true}
-                        value={form.nameTa}
-                        required={true}
-                        formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, nameTa: e.target.value }))}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                 </div>
                 <div className="mb-2">
@@ -218,18 +187,7 @@ export default function AddHospital() {
                         value={form.bio}
                         required={true}
                         formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-2">
-                    <Textarea
-                        label="Tamil Bio"
-                        placeholder="தமிழில் உள்ளிடவும்"
-                        name="bioTa"
-                        value={form.bioTa}
-                        required={true}
-                        formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, bioTa: e.target.value }))}
+                        onChange={(e) => setForm({ ...form, bio: e.target.value })}
                     />
                 </div>
                 <div className="d-flex justify-content-end gap-2 mt-3">
@@ -254,7 +212,6 @@ export default function AddHospital() {
     const AddTypeForm = ({ onSubmit, onClose, existingType = null }) => {
         const [form, setForm] = useState(existingType || {
             name: '',
-            nameTa: '',
         });
         const [formSubmitted, setFormSubmitted] = useState(false);
         useEffect(() => {
@@ -263,7 +220,6 @@ export default function AddHospital() {
         const handleAddOrEdit = () => {
             setFormSubmitted(true);
             if (!form.name.trim()) return;
-            if (!form.nameTa.trim()) return;
             onSubmit(form);
             onClose();
         };
@@ -276,18 +232,7 @@ export default function AddHospital() {
                         value={form.name}
                         required={true}
                         formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-2">
-                    <Input
-                        label="Tamil Type Name"
-                        placeholder="தமிழில் உள்ளிடவும்"
-                        name="nameTa"
-                        value={form.nameTa}
-                        required={true}
-                        formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, nameTa: e.target.value }))}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                 </div>
                 <div className="d-flex justify-content-end gap-2 mt-3">
@@ -312,10 +257,8 @@ export default function AddHospital() {
     const AddDepartmentForm = ({ onSubmit, onClose, existingDepartment = null }) => {
         const [form, setForm] = useState({
             title: '',
-            titleTa: '',
             file: '',
             subTitle: '',
-            subTitleTa: '',
         });
         const [previewUrl, setPreviewUrl] = useState(null);
         const [formSubmitted, setFormSubmitted] = useState(false);
@@ -328,16 +271,13 @@ export default function AddHospital() {
             }
         }, [existingDepartment]);
         const resetForm = () => {
-            setForm({ title: '', titleTa: '', file: '', subTitle: '', subTitleTa: '' });
+            setForm({ title: '', file: '', subTitle: '' });
             setPreviewUrl(null);
             setFormSubmitted(false);
         };
         const handleAddOrEdit = () => {
             setFormSubmitted(true);
             if (!form.title.trim()) return;
-            if (!form.titleTa.trim()) return;
-            if (!form.subTitle.trim()) return;
-            if (!form.subTitleTa.trim()) return;
             onSubmit(form);
             resetForm();
             onClose();
@@ -351,18 +291,7 @@ export default function AddHospital() {
                         value={form.title}
                         required={true}
                         formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-2">
-                    <Input
-                        label="Tamil Department Name"
-                        placeholder="தமிழில் உள்ளிடவும்"
-                        name="titleTa"
-                        value={form.titleTa}
-                        required={true}
-                        formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, titleTa: e.target.value }))}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })}
                     />
                 </div>
                 <div className="mb-2">
@@ -386,18 +315,7 @@ export default function AddHospital() {
                         value={form.subTitle}
                         required={true}
                         formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, subTitle: e.target.value }))}
-                    />
-                </div>
-                <div className="mb-2">
-                    <Textarea
-                        label="Tamil Subtitle"
-                        placeholder="தமிழில் உள்ளிடவும்"
-                        name="subTitleTa"
-                        value={form.subTitleTa}
-                        required={true}
-                        formSubmitted={formSubmitted}
-                        onChange={(e) => setForm((prev) => ({ ...prev, subTitleTa: e.target.value }))}
+                        onChange={(e) => setForm({ ...form, subTitle: e.target.value })}
                     />
                 </div>
                 <div className="d-flex justify-content-end gap-2 mt-3">
@@ -432,11 +350,9 @@ export default function AddHospital() {
                 setForm({
                     ...form,
                     name: hospital?.name || '',
-                    nameTa: hospital?.translations?.ta?.name || '',
                     status: hospital?.status || '',
                     file: hospital?.file || '',
                     address: hospital?.address || '',
-                    addressTa: hospital?.translations?.ta?.address || '',
                     mobile: hospital?.mobile || '',
                     email: hospital?.email || '',
                     latitude: hospital?.latitude || '',
@@ -501,12 +417,10 @@ export default function AddHospital() {
             ...form,
             translations: {
                 en: {
-                    name: form.name,
-                    address: form.address,
+                    name: form.name
                 },
                 ta: {
-                    name: form.nameTa,
-                    address: form.addressTa,
+                    name: form.nameTa
                 }
             }
         }
@@ -514,12 +428,10 @@ export default function AddHospital() {
             ...updateForm,
             translations: {
                 en: {
-                    name: form.name,
-                    address: form.address,
+                    name: form.name
                 },
                 ta: {
-                    name: form.nameTa,
-                    address: form.addressTa,
+                    name: form.nameTa
                 }
             }
         };
@@ -556,11 +468,7 @@ export default function AddHospital() {
             const payload = {
                 params: {
                     ...newType,
-                    status: newType.status || "Active",
-                    translations: {
-                        en: { name: newType.name },
-                        ta: { name: newType.nameTa },
-                    }
+                    status: newType.status || "Active"
                 }
             };
             console.log('Sending payload:', payload);
@@ -585,22 +493,7 @@ export default function AddHospital() {
         try {
             const formData = new FormData();
             formData.append('title', newDepartment.title);
-            formData.append('titleTa', newDepartment.titleTa || '');
             formData.append('subTitle', newDepartment.subTitle);
-            formData.append('subTitleTa', newDepartment.subTitleTa || '');
-            formData.append(
-                'translations',
-                JSON.stringify({
-                    en: {
-                        title: newDepartment.title,
-                        subTitle: newDepartment.subTitle,
-                    },
-                    ta: {
-                        title: newDepartment.titleTa,
-                        subTitle: newDepartment.subTitleTa,
-                    },
-                })
-            );
             if (newDepartment.file) {
                 formData.append('file', newDepartment.file);
             }
@@ -660,17 +553,35 @@ export default function AddHospital() {
                                 />
                             </div>
                             <div className="mt-2">
-                                <Input
+                                {/* <Input
                                     label="Tamil Name"
-                                    placeholder="தமிழில் உள்ளிடவும்"
                                     name="nameTa"
                                     value={form.nameTa}
-                                    onChange={(e) =>
+                                    // onChange={(e) =>
+                                        
+                                    //     setForm({ ...form, nameTa: e.target.value })
+                                    // }
+                                    onChange={(e) => {
+                                    console.log("TAMIL INPUT:", e.target.value);
+                                    setForm({ ...form, nameTa: e.target.value });
+                                }}
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                /> */}
+                                <Input
+                                    label="Tamil Name"
+                                    name="nameTa"
+                                    value={form.nameTa}
+                                    onChange={(e) => {
+                                        const tamilValue = e.target.value;
+
+                                        console.log("TAMIL TYPED:", tamilValue);
+
                                         setForm((prev) => ({
                                             ...prev,
-                                            nameTa: e.target.value,
-                                        }))
-                                    }
+                                            nameTa: tamilValue,
+                                        }));
+                                    }}
                                     required={true}
                                     formSubmitted={formSubmitted}
                                 />
@@ -718,22 +629,6 @@ export default function AddHospital() {
                                     initialLat={form.latitude}
                                     initialLng={form.longitude}
                                     onLocationSelect={handleLocationSelect}
-                                    formSubmitted={formSubmitted}
-                                />
-                            </div>
-                            <div className="mt-2">
-                                <Input
-                                    label="Tamil Address"
-                                    placeholder="தமிழில் முகவரியை உள்ளிடவும்"
-                                    name="addressTa"
-                                    value={form.addressTa}
-                                    onChange={(e) =>
-                                        setForm((prev) => ({
-                                            ...prev,
-                                            addressTa: e.target.value,
-                                        }))
-                                    }
-                                    required={true}
                                     formSubmitted={formSubmitted}
                                 />
                             </div>
@@ -830,17 +725,6 @@ export default function AddHospital() {
                             required={true}
                             onChange={(e) => setFacilityInput(e.target.value)}
                         />
-                        <div className="mt-2">
-                            <Input
-                               // placeholder=""
-                                name="FacilityTamil"
-                                label="Tamil Facility Description"
-                                placeholder="தமிழில் உள்ளிடவும்"
-                                value={facilityInputTa}
-                                required={true}
-                                onChange={(e) => setFacilityInputTa(e.target.value)}
-                            />
-                        </div>
                         <div className="d-flex justify-content-end align-items-center mt-2">
                             <Button
                                 label="Add"
@@ -892,17 +776,7 @@ export default function AddHospital() {
                                                         paddingTop: '6px',
                                                     }}
                                                 >
-                                                    <span>
-                                                        {facility.decription}
-                                                        {facility.decriptionTa && (
-                                                            <>
-                                                                <br />
-                                                                <span style={{ fontSize: '12px' }}>
-                                                                    {facility.decriptionTa}
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </span>
+                                                    <span>{facility.decription}</span>
                                                     <Image
                                                         src="/assets/icons/delete-icon.svg"
                                                         alt="delete icon"
@@ -927,19 +801,6 @@ export default function AddHospital() {
                                 + Add Doctor <span style={{ color: 'red' }}>*</span>
                             </span>
                         </div> */}
-                        <div className="mt-3">
-                            <span
-                                className="cursor"
-                                style={{
-                                    color: Colors.Primary2,
-                                    fontWeight: 300,
-                                    fontSize: "14px"
-                                }}
-                                onClick={() => setDoctorDialogOpen(true)}
-                            >
-                                + Add Doctor <span style={{ color: "red" }}>*</span>
-                            </span>
-                        </div>
                         {form.Doctors.length > 0 && (
                             <div className="mt-4">
                                 <label className="form-label" style={{ fontWeight: '500' }}>
@@ -954,15 +815,7 @@ export default function AddHospital() {
                                                     paddingBottom: '6px',
                                                     paddingTop: '6px',
                                                 }}>
-                                                <span>
-                                                    {doc.name}
-                                                    {doc.nameTa && (
-                                                        <>
-                                                            <br />
-                                                            <span style={{ fontSize: '12px' }}>{doc.nameTa}</span>
-                                                        </>
-                                                    )}
-                                                </span>
+                                                <span>{doc.name}</span>
                                                 <div className="d-flex gap-2 cursor">
                                                     <Image
                                                         src="/assets/icons/edit-icon.svg"
@@ -1005,15 +858,7 @@ export default function AddHospital() {
                                                     paddingBottom: '6px',
                                                     paddingTop: '6px',
                                                 }}>
-                                                <span>
-                                                        {type.name}
-                                                        {type.nameTa && (
-                                                            <>
-                                                                <br />
-                                                                <span style={{ fontSize: '12px' }}>{type.nameTa}</span>
-                                                            </>
-                                                        )}
-                                                    </span>
+                                                <span>{type.name}</span>
                                                 <div className="d-flex gap-2 cursor">
                                                     <Image
                                                         src="/assets/icons/edit-icon.svg"
@@ -1056,15 +901,7 @@ export default function AddHospital() {
                                                     paddingBottom: '6px',
                                                     paddingTop: '6px',
                                                 }}>
-                                                <span>
-                                                        {department.title}
-                                                        {department.titleTa && (
-                                                            <>
-                                                                <br />
-                                                                <span style={{ fontSize: '12px' }}>{department.titleTa}</span>
-                                                            </>
-                                                        )}
-                                                    </span>
+                                                <span>{department.title}</span>
                                                 <div className="d-flex gap-2 cursor">
                                                     <Image
                                                         src="/assets/icons/edit-icon.svg"

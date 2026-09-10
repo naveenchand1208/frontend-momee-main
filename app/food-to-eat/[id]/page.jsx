@@ -17,15 +17,18 @@ import { CircularProgress } from '@mui/material';
 export default function FoodToEatAdd() {
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         status: 'Active',
         file: '',
         momType: '',
         region: '',
         category: '',
+        categoryTa: '',
         categoryId: '',
         month: '',
         week: '',
         foodType: '',
+        foodTypeTa: '',
         foodTypeId: '',
         energy: '',
         duration: '',
@@ -76,15 +79,59 @@ export default function FoodToEatAdd() {
         { label: 'Northern', value: 'Northern' },
         { label: 'Both', value: 'both' },
     ];
-    const foodTypes = [
-        { label: 'Vegetables', value: 'vegetables', id: 1 },
-        { label: 'Non Veg', value: 'nonVeg', id: 2 },
-        { label: 'Fruits', value: 'fruits', id: 3 },
-        { label: 'Grains', value: 'grains', id: 4 },
-        { label: 'Nuts', value: 'nuts', id: 5 },
-        { label: 'Dairy Products', value: 'dairyProducts', id: 6 },
-        { label: 'Common', value: 'common', id: 7 },
-        // { label: 'Sea Food', value: 'seaFood', id: 4 },
+    // const foodTypes = [
+    //     { label: 'Vegetables', value: 'vegetables', id: 1 },
+    //     { label: 'Non Veg', value: 'nonVeg', id: 2 },
+    //     { label: 'Fruits', value: 'fruits', id: 3 },
+    //     { label: 'Grains', value: 'grains', id: 4 },
+    //     { label: 'Nuts', value: 'nuts', id: 5 },
+    //     { label: 'Dairy Products', value: 'dairyProducts', id: 6 },
+    //     { label: 'Common', value: 'common', id: 7 },
+    //     // { label: 'Sea Food', value: 'seaFood', id: 4 },
+    // ];
+        const foodTypes = [
+        {
+            label: 'Vegetables',
+            labelTa: 'காய்கறிகள்',
+            value: 'vegetables',
+            id: 1
+        },
+        {
+            label: 'Non Veg',
+            labelTa: 'அசைவ உணவு',
+            value: 'nonVeg',
+            id: 2
+        },
+        {
+            label: 'Fruits',
+            labelTa: 'பழங்கள்',
+            value: 'fruits',
+            id: 3
+        },
+        {
+            label: 'Grains',
+            labelTa: 'தானியங்கள்',
+            value: 'grains',
+            id: 4
+        },
+        {
+            label: 'Nuts',
+            labelTa: 'கொட்டைகள்',
+            value: 'nuts',
+            id: 5
+        },
+        {
+            label: 'Dairy Products',
+            labelTa: 'பால் பொருட்கள்',
+            value: 'dairyProducts',
+            id: 6
+        },
+        {
+            label: 'Common',
+            labelTa: 'பொதுவானவை',
+            value: 'common',
+            id: 7
+        }
     ];
     useEffect(() => {
         const month = getMonths(12);
@@ -108,26 +155,95 @@ export default function FoodToEatAdd() {
     }, [categories]);
     const viewFoods = async (id) => {
         try {
-            const payload = { params: { id } }
+            //const payload = { params: { id } }
+            const payload = {
+                    params: {
+                        id,
+                        admin: true
+                    }
+                };
             const data = await apiRequest(apiRoutes.viewFoodsEat, 'POST', payload, router);
             if (data?.response) {
                 const food = data?.data;
                 setForm({
-                    title: food?.title || '',
-                    status: food?.status || '',
-                    file: food?.file || '',
-                    categoryId: food?.categoryId || '',
-                    category: categories.find(cat => cat.id === food.categoryId)?.title || '',
-                    foodType: food?.foodType || '',
-                    foodTypeId: foodTypes.find(fd => fd.id === food.foodTypeId)?.label || '',
-                    momType: food.momType,
-                    week: weeks.find(wk => wk.label === food.week)?.label || '',
-                    month:food.month || '',
-                    region: food.region,
-                    energy: food.energy,
-                    duration: food.duration,
-                    protein: food.protein,
+                    title:food?.title || '',
+                    titleTa:
+                        food?.translations?.ta?.title || '',
+
+                    status:
+                        food?.status || '',
+
+                    file:
+                        food?.file || '',
+
+                    categoryId:
+                        food?.categoryId || '',
+
+                    category:
+                        categories.find(
+                            cat => cat.id === food.categoryId
+                        )?.title || '',
+
+                    categoryTa:
+                        food?.translations?.ta?.category ||
+                        categories.find(
+                            cat => cat.id === food.categoryId
+                        )?.labelTa ||
+                        '',
+
+                    foodType:
+                        food?.foodType || '',
+
+                    foodTypeTa:
+                        food?.translations?.ta?.foodType ||
+                        foodTypes.find(
+                            fd => fd.id === food.foodType
+                        )?.labelTa ||
+                        '',
+
+                    foodTypeId:
+                        food?.foodType || '',
+
+                    momType:
+                        food?.momType || '',
+
+                    week:
+                        weeks.find(
+                            wk => wk.label === food.week
+                        )?.label || '',
+
+                    month:
+                        food?.month || '',
+
+                    region:
+                        food?.region || '',
+
+                    energy:
+                        food?.energy || '',
+
+                    duration:
+                        food?.duration || '',
+
+                    protein:
+                        food?.protein || ''
+
                 });
+                // setForm({
+                //     title: food?.title || '',
+                //     status: food?.status || '',
+                //     file: food?.file || '',
+                //     categoryId: food?.categoryId || '',
+                //     category: categories.find(cat => cat.id === food.categoryId)?.title || '',
+                //     foodType: food?.foodType || '',
+                //     foodTypeId: foodTypes.find(fd => fd.id === food.foodTypeId)?.label || '',
+                //     momType: food.momType,
+                //     week: weeks.find(wk => wk.label === food.week)?.label || '',
+                //     month:food.month || '',
+                //     region: food.region,
+                //     energy: food.energy,
+                //     duration: food.duration,
+                //     protein: food.protein,
+                // });
                 setViewFood(food)
                 setPreviewUrl(food.file)
             }
@@ -149,10 +265,17 @@ export default function FoodToEatAdd() {
         try {
             const data = await apiRequest(apiRoutes.getFoodEatCategoryList, 'POST', payload, router);
             if (data?.response) {
-                const categories = data?.data?.docs.map(item => ({
-                    ...item,
-                    label: item.title
-                }))
+                // const categories = data?.data?.docs.map(item => ({
+                //     ...item,
+                //     label: item.title
+                // }))
+                const categories =
+                    data?.data?.docs.map(item => ({
+                        ...item,
+                        label: item.title,
+                        labelTa:
+                            item?.translations?.ta?.title || ''
+                    }));
                 setCategories(categories);
                 setIsLoading(false)
             } else {
@@ -201,19 +324,50 @@ export default function FoodToEatAdd() {
             region: value,
         }));
     };
+    // const handleCategorySelect = (item) => {
+    //     setForm((prev) => ({
+    //         ...prev,
+    //         category: item.title,
+    //         categoryId: item.id,
+    //     }));
+    // };
     const handleCategorySelect = (item) => {
         setForm((prev) => ({
             ...prev,
-            category: item.title,
-            categoryId: item.id,
+
+            category:
+                item?.title || '',
+
+            categoryTa:
+                item?.translations?.ta?.title ||
+                item?.labelTa ||
+                '',
+
+            categoryId:
+                item?.id || ''
         }));
     };
-    const handleFoodTypeSelect = (item) => {
+    // const handleFoodTypeSelect = (item) => {
+    //     setForm((prev) => ({
+    //         ...prev,
+    //         foodType: item.label,
+    //         foodTypeId: item.id,
+    //     }));
+    // };
+        const handleFoodTypeSelect = (item) => {
         setForm((prev) => ({
             ...prev,
-            foodType: item.label,
-            foodTypeId: item.id,
+
+            foodType:
+                item?.label || '',
+
+            foodTypeTa:
+                item?.labelTa || '',
+
+            foodTypeId:
+                item?.id || ''
         }));
+
     };
     const handleMonthSelect = (item) => {
         setForm((prev) => ({
@@ -231,10 +385,31 @@ export default function FoodToEatAdd() {
         e.preventDefault();
         setFormSubmitted(true);
         setSubmitLoading(true);
-        if (!form.title || !form.foodType || !form.file || !form.category
-            || !form.region || !form.energy || !form.duration || !form.protein
+        // if (!form.title || !form.foodType || !form.file || !form.category
+        //     || !form.region || !form.energy || !form.duration || !form.protein
+        // ) {
+        //     // showError('Invalid Form');
+        //     setSubmitLoading(false);
+        //     return;
+        // }
+        if (
+            !form.title ||
+            !form.titleTa ||
+
+            !form.foodType ||
+            !form.foodTypeTa ||
+
+            !form.file ||
+
+            !form.category ||
+            !form.categoryTa ||
+
+            !form.region ||
+
+            !form.energy ||
+            !form.duration ||
+            !form.protein
         ) {
-            // showError('Invalid Form');
             setSubmitLoading(false);
             return;
         }
@@ -258,7 +433,51 @@ export default function FoodToEatAdd() {
                 fileChanged: isFileChanged,
             };
         }
-        const formData = objectToFormData(!isEdit ? form : updateForm)
+        //const formData = objectToFormData(!isEdit ? form : updateForm)
+        const formData =
+                objectToFormData(
+                    !isEdit ? form : updateForm
+                );
+
+            formData.set(
+                'titleTa',
+                form.titleTa
+            );
+
+            formData.set(
+                'category',
+                form.category
+            );
+
+            formData.set(
+                'categoryTa',
+                form.categoryTa
+            );
+
+            formData.set(
+                'foodType',
+                form.foodType
+            );
+
+            formData.set(
+                'foodTypeTa',
+                form.foodTypeTa
+            );
+
+            formData.set(
+                'energy',
+                form.energy
+            );
+
+            formData.set(
+                'duration',
+                form.duration
+            );
+
+            formData.set(
+                'protein',
+                form.protein
+            );
         manageFoods(formData)
     };
     const manageFoods = async (formData) => {
@@ -319,6 +538,23 @@ export default function FoodToEatAdd() {
                             />
                         </div>
                         <div className="mt-2 col-12 col-sm-6 col-md-4">
+                            <Input
+                                label="Tamil Name"
+                                name="titleTa"
+                                value={form.titleTa}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        titleTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+                        </div>
+                        <div className="mt-2 col-12 col-sm-6 col-md-4">
                             <FileUpload
                                 label="Thumbnail"
                                 format="image"
@@ -357,6 +593,23 @@ export default function FoodToEatAdd() {
                             />
                         </div>
                         <div className="mt-2 col-12 col-sm-6 col-md-4">
+                            <Input
+                                label="Tamil Category"
+                                name="categoryTa"
+                                value={form.categoryTa || ''}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        categoryTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+                        </div>
+                        <div className="mt-2 col-12 col-sm-6 col-md-4">
                             <AutoCompleteInput
                                 label="Food Type"
                                 options={foodTypes}
@@ -365,6 +618,23 @@ export default function FoodToEatAdd() {
                                 formSubmitted={formSubmitted}
                                 disabled={!form.momType}
                                 onSelect={handleFoodTypeSelect}
+                            />
+                        </div>
+                        <div className="mt-2 col-12 col-sm-6 col-md-4">
+                            <Input
+                                label="Tamil Food Type"
+                                name="foodTypeTa"
+                                value={form.foodTypeTa || ''}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        foodTypeTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
                             />
                         </div>
                         {form.momType === 'newMom' ? (

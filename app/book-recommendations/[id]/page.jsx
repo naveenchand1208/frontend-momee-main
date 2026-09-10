@@ -17,6 +17,7 @@ import Checkbox from '@/components/shared/checkbox/page';
 export default function Book_Recommendations() {
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         status: 'Active',
         file: '',
         momType: '',
@@ -122,6 +123,7 @@ export default function Book_Recommendations() {
 
                 setForm({
                     title: book?.title || '',
+                    titleTa: book?.translations?.ta?.title || '',
                     status: book?.status || '',
                     momType: book?.momType || '',
                     file: book?.file || '',
@@ -164,51 +166,116 @@ export default function Book_Recommendations() {
             [key]: e.target.checked,
         }));
     };
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setFormSubmitted(true);
-        setButtonLoading(true);
-        console.log('form', form)
 
-        if (!form.pregMom && !form.newMom) {
-            setButtonLoading(false);
-            showError('Please Select Mom Type');
-            return;
-        }
+        const handleSubmit = (e) => {
+            e.preventDefault();
 
-        if (!form.title || !form.file) {
-            setButtonLoading(false);
-            return;
-        }
-        if (!form.link && !form.book) {
-            showError('Required Book or Link');
-            setButtonLoading(false);
-            return;
-        }
+            setFormSubmitted(true);
+            setButtonLoading(true);
 
+            console.log('FORM:', form);
 
-        let momType = '';
-        if (form.pregMom && !form.newMom) {
-            momType = 'pregMom';
-        } else if (!form.pregMom && form.newMom) {
-            momType = 'newMom';
-        }
-        form.momType = momType;
-        let updateForm = {
-            ...viewBook,
-            ...form,
-            id,
-            fileChanged: form.file !== viewBook.file,
+            if (!form.pregMom && !form.newMom) {
+                setButtonLoading(false);
+                showError('Please Select Mom Type');
+                return;
+            }
+
+            if (!form.title || !form.titleTa || !form.file) {
+                setButtonLoading(false);
+                return;
+            }
+
+            if (!form.link && !form.book) {
+                showError('Required Book or Link');
+                setButtonLoading(false);
+                return;
+            }
+
+            let momType = '';
+
+            if (form.pregMom && !form.newMom) {
+                momType = 'pregMom';
+            } else if (!form.pregMom && form.newMom) {
+                momType = 'newMom';
+            }
+
+            let updateForm;
+
+            if (isEdit) {
+                updateForm = {
+                    ...viewBook,
+                    ...form,
+                    id: id,
+                    momType: momType,
+                    fileChanged: form.file !== viewBook.file,
+                    bookChanged: form.book !== viewBook.book
+                };
+            } else {
+                updateForm = {
+                    ...form,
+                    momType: momType
+                };
+            }
+
+            const formData = objectToFormData(updateForm);
+
+            // Make sure Tamil title is included in multipart form-data
+            formData.set('titleTa', form.titleTa);
+
+            console.log('English Title:', form.title);
+            console.log('Tamil Title:', form.titleTa);
+            console.log('FormData Tamil Title:', formData.get('titleTa'));
+
+            manageBooks(formData);
         };
 
-        if (momType) {
-            updateForm.momType = momType;
-        }
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     setFormSubmitted(true);
+    //     setButtonLoading(true);
+    //     console.log('form', form)
 
-        console.log('updateForm', updateForm)
-        const formData = objectToFormData(!isEdit ? form : updateForm)
-        manageBooks(formData)
-    };
+    //     if (!form.pregMom && !form.newMom) {
+    //         setButtonLoading(false);
+    //         showError('Please Select Mom Type');
+    //         return;
+    //     }
+
+    //     if (!form.title || !form.titleTa || !form.file) {
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+    //     if (!form.link && !form.book) {
+    //         showError('Required Book or Link');
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+
+
+    //     let momType = '';
+    //     if (form.pregMom && !form.newMom) {
+    //         momType = 'pregMom';
+    //     } else if (!form.pregMom && form.newMom) {
+    //         momType = 'newMom';
+    //     }
+    //     form.momType = momType;
+    //     let updateForm = {
+    //         ...viewBook,
+    //         ...form,
+    //         id,
+    //         fileChanged: form.file !== viewBook.file,
+    //     };
+
+    //     if (momType) {
+    //         updateForm.momType = momType;
+    //     }
+
+    //     console.log('updateForm', updateForm)
+    //     const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     manageBooks(formData)
+    // };
+
     const manageBooks = async (formData) => {
         const action = !isEdit ? apiRoutes.addBook : apiRoutes.updateBook
         try {
@@ -283,6 +350,22 @@ export default function Book_Recommendations() {
                             //disabled={!form.momType}
                             />
                         </div>
+                        <div className="mt-2">
+                                <Input
+                                    label="Tamil Title"
+                                    name="titleTa"
+                                    value={form.titleTa}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            titleTa: e.target.value
+                                        })
+                                    }
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                    tamilKeyboard={true}
+                                />
+                            </div>
                         <div className="mt-2">
                             <FileUpload
                                 label="Thumbnail"

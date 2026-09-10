@@ -30,6 +30,7 @@ export default function Baby_Animation_Add() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         file: '',
         babySize: '',
         babyWeight: '',
@@ -58,6 +59,7 @@ export default function Baby_Animation_Add() {
     const handleClear = () => {
         setForm({
             name: '',
+            nameTa: '',
             file: '',
             babySize: '',
             babyWeight: '',
@@ -124,6 +126,7 @@ export default function Baby_Animation_Add() {
                 const template = data?.data;
                 setForm({
                     name: template?.name || '',
+                    nameTa: template?.translations?.ta?.name || '',
                     // status: template?.status || '',
                     file: template?.file || '',
                     babySize: template?.babySize || '',
@@ -142,7 +145,7 @@ export default function Baby_Animation_Add() {
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.name || !form.file || !form.babySize || !form.babyWeight) {
+        if (!form.name || !form.nameTa || !form.file || !form.babySize || !form.babyWeight) {
             setButtonLoading(false);
             return;
         }
@@ -157,8 +160,13 @@ export default function Baby_Animation_Add() {
                 fileChanged: isFileChanged,
             };
         }
+        const preparedForm = {
+            ...updateForm,
+            nameTa: updateForm.nameTa
+        };
 
-        const formData = objectToFormData(updateForm);
+        const formData = objectToFormData(preparedForm);
+        //const formData = objectToFormData(updateForm);
         manageTemplate(formData);
     };
     const manageTemplate = async (formData) => {
@@ -201,6 +209,22 @@ export default function Baby_Animation_Add() {
                                 formSubmitted={formSubmitted}
                                 onSelect={handleWeekSelect}
                                 value={form.name}
+                            />
+                        </div>
+                        <div className="col-md-12 mb-3">
+                            <Input
+                                name="nameTa"
+                                label="Title (Tamil)"
+                                value={form.nameTa}
+                                required
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        nameTa: e.target.value
+                                    }))
+                                }
                             />
                         </div>
                         <div className="col-md-12 mb-4">

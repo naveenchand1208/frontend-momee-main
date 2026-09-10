@@ -19,6 +19,7 @@ import { Colors } from '@/common/constants/colorEnum';
 export default function AddExercises() {
     const [form, setForm] = useState({
         collectionName: '',
+        collectionNameTa: '',
         file: '',
         burnCalories: '',
         duration: '',
@@ -28,6 +29,7 @@ export default function AddExercises() {
     })
     const [exerciseForm, setExerciseForm] = useState({
         exerciseName: '',
+        exerciseNameTa: '',
         file: '',
         sets: '',
         seconds: '',
@@ -172,11 +174,18 @@ export default function AddExercises() {
             console.log('response', response)
             const exercise = response?.data;
             setViewExercise(response.data)
+            // setExerciseForm({
+            //     exerciseName: exercise.exerciseName,
+            //     sets: exercise.sets,
+            //     seconds: exercise.seconds,
+            //     file: exercise.file,
+            // })
             setExerciseForm({
-                exerciseName: exercise.exerciseName,
-                sets: exercise.sets,
-                seconds: exercise.seconds,
-                file: exercise.file,
+                exerciseName: exercise.exerciseName || '',
+                exerciseNameTa: exercise?.translations?.ta?.exerciseName || '',
+                sets: exercise.sets || '',
+                seconds: exercise.seconds || '',
+                file: exercise.file || '',
             })
             setAudioPreviewUrl(exercise.file);
             setIsEditing(true);
@@ -192,6 +201,7 @@ export default function AddExercises() {
                 const ex = data.data;
                 setForm({
                     collectionName: ex?.collectionName || '',
+                    collectionNameTa: ex?.translations?.ta?.collectionName || '',
                     duration: ex?.duration || '',
                     burnCalories: ex?.burnCalories || '',
                     file: ex?.file || '',
@@ -215,7 +225,7 @@ export default function AddExercises() {
         setFormSubmitted(true);
         setButtonLoading(true);
         console.log('form', form)
-        if (!form.collectionName || !form.file || !form.burnCalories || !form.duration) {
+        if (!form.collectionName || !form.collectionNameTa || !form.file || !form.burnCalories || !form.duration) {
             // showError('Invalid Form');
             setButtonLoading(false);
             return;
@@ -241,6 +251,7 @@ export default function AddExercises() {
             };
         }
         const formData = objectToFormData(!isEdit ? form : updateForm)
+        formData.set('collectionNameTa', form.collectionNameTa);
         console.log('updateForm', updateForm);
         manageCollection(formData)
     };
@@ -269,7 +280,7 @@ export default function AddExercises() {
         console.log('handleExerciseSubmit called', exerciseForm);
 
         const { exerciseName, file, sets, seconds } = exerciseForm;
-        if (!exerciseName || !file && !isEditing || !sets || !seconds) {
+        if (!exerciseName || !exerciseForm.exerciseNameTa || !file && !isEditing || !sets || !seconds) {
             // showError('Invalid Form');
             setExerciseButtonLoading(false);
             return;
@@ -290,6 +301,7 @@ export default function AddExercises() {
             }
         }
         const formData = objectToFormData(updateForm)
+        formData.set('exerciseNameTa', exerciseForm.exerciseNameTa);
         manageExercises(formData)
     };
     const manageExercises = async (formData) => {
@@ -358,6 +370,24 @@ export default function AddExercises() {
                                 disabled={!form.momType}
                                 formSubmitted={formSubmitted}
                                 onChange={(e) => setForm({ ...form, collectionName: e.target.value })}
+                            />
+                        </div>
+                        <div className="mt-3">
+                            <Input
+                                placeholder=""
+                                name="collectionNameTa"
+                                label="Tamil Collection Name"
+                                value={form.collectionNameTa}
+                                required={true}
+                                disabled={!form.momType}
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        collectionNameTa: e.target.value
+                                    })
+                                }
                             />
                         </div>
                         <div className="mt-1">
@@ -456,6 +486,21 @@ export default function AddExercises() {
                                         onChange={(e) => setExerciseForm({ ...exerciseForm, exerciseName: e.target.value })}
                                     />
                                 </div>
+                                <Input
+                                    name="exerciseNameTa"
+                                    label="Tamil Name"
+                                    value={exerciseForm.exerciseNameTa}
+                                    formSubmitted={exerciseFormSubmitted}
+                                    required={true}
+                                    disabled={!form.momType}
+                                    tamilKeyboard={true}
+                                    onChange={(e) =>
+                                        setExerciseForm({
+                                            ...exerciseForm,
+                                            exerciseNameTa: e.target.value
+                                        })
+                                    }
+                                />
                                 <div style={{ width: '46%' }}>
                                     <FileUpload
                                         label="Thumbnail(gif)"

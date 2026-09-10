@@ -30,6 +30,7 @@ export default function Diet_Plans_Add() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
         planName: '',
+        planNameTa: '',
         planAmount: '',
         durationMonths: '',
         deviceType: 'android',
@@ -122,6 +123,8 @@ export default function Diet_Plans_Add() {
                 console.log('plan', plan)
                 setForm({
                     planName: plan?.planName || '',
+                    planNameTa: plan?.translations?.ta?.name ||
+                            plan?.planNameTa || '',
                     planAmount: plan?.planAmount || '',
                     durationMonths: plan?.durationMonths || '',
                     deviceType: (plan?.deviceType || '').toLowerCase(),
@@ -140,7 +143,7 @@ export default function Diet_Plans_Add() {
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.planName || !form.planAmount || !form.durationMonths || !form.deviceType) {
+        if (!form.planName || !form.planNameTa || !form.planAmount || !form.durationMonths || !form.deviceType) {
             setButtonLoading(false);
             showError('Please Fill Forms');
             return;
@@ -170,7 +173,15 @@ export default function Diet_Plans_Add() {
                 planName: updateForm.planName,
                 planAmount: updateForm.planAmount,
                 durationMonths: updateForm.durationMonths,
-                deviceType: updateForm.deviceType
+                deviceType: updateForm.deviceType,
+                translations: {
+                        en: {
+                            name: updateForm.planName
+                        },
+                        ta: {
+                            name: updateForm.planNameTa
+                        }
+                    }
             }
         };
         manageDietPlan(payload);
@@ -209,6 +220,19 @@ export default function Diet_Plans_Add() {
                                 formSubmitted={formSubmitted}
                                 required
                                 onChange={(e) => setForm({ ...form, planName: e.target.value })}
+                            />
+                        </div>
+                        <div className="col-md-12 mb-3">
+                            <Input
+                                name="planNameTa"
+                                label="Plan Name (Tamil)"
+                                value={form.planNameTa}
+                                formSubmitted={formSubmitted}
+                                required
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({ ...form, planNameTa: e.target.value })
+                                }
                             />
                         </div>
 

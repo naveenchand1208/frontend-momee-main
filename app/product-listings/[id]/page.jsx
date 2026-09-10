@@ -16,11 +16,22 @@ import { newObjectToFormData } from '@/common/utils/util';
 import Image from 'next/image';
 
 export default function AddProductListings() {
+    // const [form, setForm] = useState({
+    //     name: '',
+    //     status: 'Active',
+    //     files: [],
+    //     description: '',
+    //     discountPercentage: '',
+    //     actualPrice: '',
+    //     momType: '',
+    // });
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         status: 'Active',
         files: [],
         description: '',
+        descriptionTa: '',
         discountPercentage: '',
         actualPrice: '',
         momType: '',
@@ -118,14 +129,40 @@ export default function AddProductListings() {
                     fileChanged: false
                 })) || [];
 
+                // setForm({
+                //     name: product.name || '',
+                //     files: formattedFiles,
+                //     description: product.description || '',
+                //     actualPrice: product.actualPrice || '',
+                //     discountPercentage: product.discountPercentage || '',
+                //     momType: product.momType,
+                //     status: product.status || 'Active',
+                // });
                 setForm({
-                    name: product.name || '',
-                    files: formattedFiles,
-                    description: product.description || '',
-                    actualPrice: product.actualPrice || '',
-                    discountPercentage: product.discountPercentage || '',
-                    momType: product.momType,
-                    status: product.status || 'Active',
+                    name:product?.name || '',
+                    nameTa:
+                        product?.translations?.ta?.name || '',
+
+                    files:
+                        formattedFiles,
+
+                    description:
+                        product?.description || '',
+
+                    descriptionTa:
+                        product?.translations?.ta?.description || '',
+
+                    actualPrice:
+                        product?.actualPrice || '',
+
+                    discountPercentage:
+                        product?.discountPercentage || '',
+
+                    momType:
+                        product?.momType || '',
+
+                    status:
+                        product?.status || 'Active',
                 });
                 setViewProduct(product);
             }
@@ -144,9 +181,26 @@ export default function AddProductListings() {
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.name || !form.description || !form.actualPrice || !form.discountPercentage || form.files.length === 0) {
-            showError("Please fill all required fields and upload at least one image");
+        // if (!form.name || !form.description || !form.actualPrice || !form.discountPercentage || form.files.length === 0) {
+        //     showError("Please fill all required fields and upload at least one image");
+        //     setButtonLoading(false);
+        //     return;
+        // }
+        if (
+            !form.name ||
+            !form.nameTa ||
+            !form.description ||
+            !form.descriptionTa ||
+            !form.actualPrice ||
+            !form.discountPercentage ||
+            form.files.length === 0
+        ) {
+            showError(
+                "Please fill all required fields and upload at least one image"
+            );
+
             setButtonLoading(false);
+
             return;
         }
 
@@ -160,8 +214,79 @@ export default function AddProductListings() {
             id: isEdit ? viewProduct.id : undefined,
         };
 
+        // const formData = newObjectToFormData(payload);
+        // manageProducts(formData);
         const formData = newObjectToFormData(payload);
-        manageProducts(formData);
+
+
+            // Force Tamil fields into FormData
+            formData.set(
+                'name',
+                form.name
+            );
+
+            formData.set(
+                'nameTa',
+                form.nameTa
+            );
+
+            formData.set(
+                'description',
+                form.description
+            );
+
+            formData.set(
+                'descriptionTa',
+                form.descriptionTa
+            );
+
+            formData.set(
+                'momType',
+                form.momType
+            );
+
+            formData.set(
+                'actualPrice',
+                form.actualPrice
+            );
+
+            formData.set(
+                'discountPercentage',
+                form.discountPercentage
+            );
+
+            formData.set(
+                'status',
+                form.status
+            );
+
+
+            if (isEdit) {
+
+                formData.set(
+                    'id',
+                    viewProduct.id
+                );
+            }
+
+
+            // DEBUG
+            console.log(
+                '========== PRODUCT FORM DATA =========='
+            );
+
+            for (
+                const [key, value]
+                of formData.entries()
+            ) {
+                console.log(
+                    key,
+                    value
+                );
+            }
+
+
+            manageProducts(formData);
     };
 
     const manageProducts = async (formData) => {
@@ -200,11 +325,39 @@ export default function AddProductListings() {
                             />
                         </div>
                         <div className='mt-3'>
-                        <Input label="Name" name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required formSubmitted={formSubmitted} disabled={!form.momType} />
+                            <Input label="Name" name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required formSubmitted={formSubmitted} disabled={!form.momType} />
+                            <Input
+                                label="Name (Tamil)"
+                                name="nameTa"
+                                value={form.nameTa}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        nameTa: e.target.value
+                                    })
+                                }
+                                required
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                            />
                         </div>
                         <Input label="Actual Price" name="actualPrice" type="number" value={form.actualPrice} onChange={(e) => setForm({ ...form, actualPrice: e.target.value })} required formSubmitted={formSubmitted} disabled={!form.momType} />
                         <Input label="Discount Percentage" name="discountPercentage" type="number" value={form.discountPercentage} onChange={(e) => setForm({ ...form, discountPercentage: e.target.value })} required formSubmitted={formSubmitted} disabled={!form.momType} />
                         <Textarea label="Description" name="description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required formSubmitted={formSubmitted} disabled={!form.momType} />
+                        <Textarea
+                            label="Description (Tamil)"
+                            name="descriptionTa"
+                            value={form.descriptionTa}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    descriptionTa: e.target.value
+                                })
+                            }
+                            required
+                            formSubmitted={formSubmitted}
+                            disabled={!form.momType}
+                        />
                         <label className="mt-3" style={{ fontSize: '13px', fontWeight: '500' }}>Status</label>
                         <div className="d-flex gap-3 mt-1">
                             <RadioGroup

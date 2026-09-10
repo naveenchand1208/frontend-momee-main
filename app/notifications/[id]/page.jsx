@@ -28,12 +28,21 @@ export default function NotificationsAdd() {
     const [selectedRows, setSelectedRows] = useState([]);
     const [searchKey, setSearchKey] = useState('');
      const [previewUrl, setPreviewUrl] = useState('');
+    // const [form, setForm] = useState({
+    //     title: '',
+    //     message: '',
+    //     userIds: [],
+    //     momType: '',
+    //     file: '',
+    // });
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         message: '',
+        messageTa: '',
         userIds: [],
         momType: '',
-        file: '',
+        file: ''
     });
     const breadcrumbItems = [
         { label: 'Notifications', href: '/notifications' },
@@ -147,24 +156,106 @@ export default function NotificationsAdd() {
         setButtonLoading(true);
 
         // Validate form
-        if (!form.title || !form.message || form.userIds.length === 0) {
-            showError('Please fill all required fields');
-            // console.error('Validation failed');
+        // if (!form.title || !form.message || form.userIds.length === 0) {
+        //     showError('Please fill all required fields');
+        //     // console.error('Validation failed');
+        //     setButtonLoading(false);
+        //     return;
+        // }
+
+        if (
+            !form.title ||
+            !form.titleTa ||
+            !form.message ||
+            !form.messageTa ||
+            form.userIds.length === 0
+        ) {
+            showError(
+                'Please fill all required fields'
+            );
+
             setButtonLoading(false);
             return;
         }
 
         try {
+            // const payload = {
+            //     // params: {
+            //         // title: form.title,
+            //         // message: form.message,
+            //         // userIds: form.userIds.map(String),
+            //     // },
+            //     ...form
+            // };
+            // const formData = objectToFormData(payload);
+            //const data = await apiRequest(apiRoutes.addCustomNotify, 'POST', formData, router);
             const payload = {
-                // params: {
-                    // title: form.title,
-                    // message: form.message,
-                    // userIds: form.userIds.map(String),
-                // },
                 ...form
             };
-            const formData = objectToFormData(payload);
-            const data = await apiRequest(apiRoutes.addCustomNotify, 'POST', formData, router);
+
+            const formData =
+                objectToFormData(payload);
+
+
+            // ==========================================
+            // FORCE BOTH TAMIL VALUES INTO FORMDATA
+            // ==========================================
+
+            formData.set(
+                'title',
+                form.title
+            );
+
+            formData.set(
+                'titleTa',
+                form.titleTa
+            );
+
+            formData.set(
+                'message',
+                form.message
+            );
+
+            formData.set(
+                'messageTa',
+                form.messageTa
+            );
+
+            formData.set(
+                'userIds',
+                JSON.stringify(form.userIds)
+            );
+
+
+            // ==========================================
+            // DEBUG
+            // ==========================================
+
+            console.log(
+                '========== NOTIFICATION FORM DATA =========='
+            );
+
+            for (
+                const [key, value]
+                of formData.entries()
+            ) {
+
+                console.log(
+                    key,
+                    value
+                );
+
+            }
+
+
+            const data =
+                await apiRequest(
+                    apiRoutes.addCustomNotify,
+                    'POST',
+                    formData,
+                    router
+                );
+
             if (data?.response) {
                 showSuccess('Notification sent successfully!');
                 router.push('/notifications');
@@ -198,6 +289,21 @@ export default function NotificationsAdd() {
                                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                             />
                         </div>
+                        <Input
+                            placeholder=""
+                            name="titleTa"
+                            label="Title (Tamil)"
+                            value={form.titleTa}
+                            required={true}
+                            formSubmitted={formSubmitted}
+                            tamilKeyboard={true}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    titleTa: e.target.value
+                                })
+                            }
+                        />
                         <div className="mt-3">
                             <FileUpload
                                 label="Thumbnail"
@@ -224,6 +330,20 @@ export default function NotificationsAdd() {
                                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                             />
                         </div>
+                        <Textarea
+                            placeholder=""
+                            name="messageTa"
+                            label="Message (Tamil)"
+                            value={form.messageTa}
+                            required={true}
+                            formSubmitted={formSubmitted}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    messageTa: e.target.value
+                                })
+                            }
+                        />
                         <div className="mt-3">
                             <label className="form-label" style={{ fontSize: '0.875rem' }}>Select Users Type </label>
                             <div className="d-flex gap-2">

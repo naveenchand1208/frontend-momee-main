@@ -16,14 +16,13 @@ import { Colors } from '@/common/constants/colorEnum';
 import { CircularProgress } from '@mui/material';
 export default function AddPodCasts() {
     const [form, setForm] = useState({
-        title: '',
-        status: 'Active',
-        file: '',
-        music: '',
-        momType: '',
-        // month: '',
-        // week: '',
-    });
+            title: '',
+            titleTa: '',
+            status: 'Active',
+            file: '',
+            music: '',
+            momType: '',
+        });
     const { id } = useParams();
     const router = useRouter();
     const formRef = useRef(null);
@@ -81,15 +80,34 @@ export default function AddPodCasts() {
             if (data?.response) {
                 const podcasts = data?.data;
                 // console.log('podcasts', weeks)
-                setForm({
-                    title: podcasts?.title || '',
-                    status: podcasts?.status || '',
-                    file: podcasts?.file || '',
-                    music: podcasts?.music || '',
-                    momType: podcasts.momType,
-                    // week: weeks.find(wk => wk.label === podcasts.week)?.label || '',
-                    // month: podcasts.month,
-                });
+                // setForm({
+                //     title: podcasts?.title || '',
+                //     status: podcasts?.status || '',
+                //     file: podcasts?.file || '',
+                //     music: podcasts?.music || '',
+                //     momType: podcasts.momType,
+                //     // week: weeks.find(wk => wk.label === podcasts.week)?.label || '',
+                //     // month: podcasts.month,
+                // });
+            setForm({
+                title:
+                    podcasts?.title || '',
+
+                titleTa:
+                    podcasts?.translations?.ta?.title || '',
+
+                status:
+                    podcasts?.status || '',
+
+                file:
+                    podcasts?.file || '',
+
+                music:
+                    podcasts?.music || '',
+
+                momType:
+                    podcasts?.momType || '',
+            });
                 setViewPodCasts(podcasts)
                 setPreviewUrl(podcasts.file)
                 setAudioPreviewUrl(podcasts.music);
@@ -130,42 +148,203 @@ export default function AddPodCasts() {
         setBackLoading(true);
         router.push('/podcasts');
     }
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setFormSubmitted(true);
-        setButtonLoading(true);
-        if (!form.title || !form.music || !form.file) {
-            // showError('Invalid Form');
-            setButtonLoading(false);
-            return;
-        }
-        // if (form.momType === 'pregMom' && !form.week) {
-        //     showError('Please Select Week');
-        //     setFormSubmitted(false);
-        //     setButtonLoading(false);
-        //     return;
-        // }
-        // if (form.momType === 'newMom' && !form.month) {
-        //     showError('Please Select Month');
-        //     setFormSubmitted(false);
-        //     setButtonLoading(false);
-        //     return;
-        // }
-        let updateForm;
-        if (isEdit) {
-            const isFileChanged = form.file !== viewPodCasts.file;
-            const isMusicChanged = form.music !== viewPodCasts.music;
-            updateForm = {
-                ...viewPodCasts,
-                ...form,
-                id,
-                fileChanged: isFileChanged,
-                musicChanged: isMusicChanged,
-            };
-        }
-        const formData = objectToFormData(!isEdit ? form : updateForm)
-        managePodcasts(formData)
-    };
+
+const handleSubmit = (e) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    setButtonLoading(true);
+    if (
+        !form.title ||
+        !form.titleTa ||
+        !form.music ||
+        !form.file ||
+        !form.momType
+    ) {
+
+        showError(
+            'Please enter English Title, Tamil Title, Thumbnail and Music'
+        );
+
+        setButtonLoading(false);
+
+        return;
+    }
+
+
+    let updateForm;
+
+
+    if (isEdit) {
+
+        const isFileChanged =
+            form.file !== viewPodCasts.file;
+
+        const isMusicChanged =
+            form.music !== viewPodCasts.music;
+
+
+        updateForm = {
+
+            ...viewPodCasts,
+
+            ...form,
+
+            id,
+
+            fileChanged:
+                isFileChanged,
+
+            musicChanged:
+                isMusicChanged
+
+        };
+
+    } else {
+
+        updateForm = {
+            ...form
+        };
+
+    }
+
+
+    const formData =
+        objectToFormData(
+            updateForm
+        );
+
+
+    // IMPORTANT
+    formData.set(
+        'title',
+        form.title
+    );
+
+
+    formData.set(
+        'titleTa',
+        form.titleTa
+    );
+
+
+    formData.set(
+        'momType',
+        form.momType
+    );
+
+
+    formData.set(
+        'status',
+        form.status
+    );
+
+
+    if (isEdit) {
+
+        formData.set(
+            'id',
+            id
+        );
+
+    }
+
+
+    // DEBUG
+    console.log(
+        '========== PODCAST FORM DATA =========='
+    );
+
+
+    for (
+        const [key, value]
+        of formData.entries()
+    ) {
+
+        console.log(
+            key,
+            value
+        );
+
+    }
+
+
+    managePodcasts(formData);
+};
+
+
+
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     setFormSubmitted(true);
+    //     setButtonLoading(true);
+    //     // if (!form.title || !form.music || !form.file) {
+    //     //     // showError('Invalid Form');
+    //     //     setButtonLoading(false);
+    //     //     return;
+    //     // }
+    //     if (
+    //         !form.title ||
+    //         !form.titleTa ||
+    //         !form.music ||
+    //         !form.file ||
+    //         !form.momType
+    //     ) {
+
+    //         showError(
+    //             'Please enter English Title, Tamil Title, Thumbnail and Music'
+    //         );
+
+    //         setButtonLoading(false);
+
+    //         return;
+    //     }
+    //     // if (form.momType === 'pregMom' && !form.week) {
+    //     //     showError('Please Select Week');
+    //     //     setFormSubmitted(false);
+    //     //     setButtonLoading(false);
+    //     //     return;
+    //     // }
+    //     // if (form.momType === 'newMom' && !form.month) {
+    //     //     showError('Please Select Month');
+    //     //     setFormSubmitted(false);
+    //     //     setButtonLoading(false);
+    //     //     return;
+    //     // }
+    //     let updateForm;
+    //     if (isEdit) {
+    //         const isFileChanged = form.file !== viewPodCasts.file;
+    //         const isMusicChanged = form.music !== viewPodCasts.music;
+    //         updateForm = {
+    //             ...viewPodCasts,
+    //             ...form,
+    //             id,
+    //             fileChanged: isFileChanged,
+    //             musicChanged: isMusicChanged,
+    //         };
+    //     }
+    //     const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     formData.set(
+    //         'title',
+    //         form.title
+    //     );
+
+    //     formData.set(
+    //         'titleTa',
+    //         form.titleTa
+    //     );
+
+    //     formData.set(
+    //         'momType',
+    //         form.momType
+    //     );
+
+    //     formData.set(
+    //         'status',
+    //         form.status
+    //     );
+    //     managePodcasts(formData)
+    // };
+
     const managePodcasts = async (formData) => {
         const action = !isEdit ? apiRoutes.addPodCasts : apiRoutes.updatePodCasts
         try {
@@ -221,6 +400,24 @@ export default function AddPodCasts() {
                                 formSubmitted={formSubmitted}
                                 disabled={!form.momType}
                             />
+                        </div>
+                        <div className="mt-2">
+                            <Input
+                                label="Title (Tamil)"
+                                name="titleTa"
+                                value={form.titleTa}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        titleTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+
                         </div>
                         <div className="mt-2">
                             <FileUpload

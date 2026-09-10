@@ -19,15 +19,19 @@ import Textarea from '@/components/shared/textarea/page';
 export default function AddArticle() {
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         description: '',
+        descriptionTa: '',
         status: 'Active',
         file: '',
         momType: '',
         category: '',
+        categoryTa: '',
         categoryId: '',
         month: '',
         week: '',
         foodType: '',
+        foodTypeTa: '',
         foodTypeId: '',
         region: '',
         symptoms: [],
@@ -41,6 +45,7 @@ export default function AddArticle() {
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [foodInput, setFoodInput] = useState('');
+    const [foodInputTa, setFoodInputTa] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [categories, setCategories] = useState([]);
     const [viewFood, setViewFood] = useState({});
@@ -78,15 +83,59 @@ export default function AddArticle() {
         { label: 'Both', value: 'both' },
     ];
     const foodTypes = [
-        { label: 'Vegetables', value: 'vegetables', id: 1 },
-        { label: 'Non Veg', value: 'nonVeg', id: 2 },
-        { label: 'Fruits', value: 'fruits', id: 3 },
-        { label: 'Grains', value: 'grains', id: 4 },
-        { label: 'Nuts', value: 'nuts', id: 5 },
-        { label: 'Dairy Products', value: 'dairyProducts', id: 6 },
-        { label: 'Common', value: 'common', id: 7 },
-        // { label: 'Sea Food', value: 'seaFood', id: 4 },
-    ];
+    {
+        label: 'Vegetables',
+        labelTa: 'காய்கறிகள்',
+        value: 'vegetables',
+        id: 1
+    },
+    {
+        label: 'Non Veg',
+        labelTa: 'அசைவ உணவு',
+        value: 'nonVeg',
+        id: 2
+    },
+    {
+        label: 'Fruits',
+        labelTa: 'பழங்கள்',
+        value: 'fruits',
+        id: 3
+    },
+    {
+        label: 'Grains',
+        labelTa: 'தானியங்கள்',
+        value: 'grains',
+        id: 4
+    },
+    {
+        label: 'Nuts',
+        labelTa: 'கொட்டைகள்',
+        value: 'nuts',
+        id: 5
+    },
+    {
+        label: 'Dairy Products',
+        labelTa: 'பால் பொருட்கள்',
+        value: 'dairyProducts',
+        id: 6
+    },
+    {
+        label: 'Common',
+        labelTa: 'பொதுவானவை',
+        value: 'common',
+        id: 7
+    }
+];
+    // const foodTypes = [
+    //     { label: 'Vegetables', value: 'vegetables', id: 1 },
+    //     { label: 'Non Veg', value: 'nonVeg', id: 2 },
+    //     { label: 'Fruits', value: 'fruits', id: 3 },
+    //     { label: 'Grains', value: 'grains', id: 4 },
+    //     { label: 'Nuts', value: 'nuts', id: 5 },
+    //     { label: 'Dairy Products', value: 'dairyProducts', id: 6 },
+    //     { label: 'Common', value: 'common', id: 7 },
+    //     // { label: 'Sea Food', value: 'seaFood', id: 4 },
+    // ];
     useEffect(() => {
         const month = getMonths(12);
         setMonths(month);
@@ -108,25 +157,75 @@ export default function AddArticle() {
     }, [categories]);
     const viewFoods = async (id) => {
         try {
-            const payload = { params: { id } }
+            // const payload = { params: { id } }
+            const payload = {
+                params: {
+                    id,
+                    admin: true
+                }
+            };
             const data = await apiRequest(apiRoutes.viewFoodsAvoid, 'POST', payload, router);
             if (data?.response) {
                 const food = data?.data;
                 setForm({
                     title: food?.title || '',
+                    titleTa: food?.translations?.ta?.title || '',
                     description: food?.description || '',
+                    descriptionTa: food?.translations?.ta?.description || '',
                     status: food?.status || '',
                     file: food?.file || '',
                     categoryId: food?.categoryId || '',
-                    category: categories.find(cat => cat.id === food.categoryId)?.title || '',
+                    // category: categories.find(
+                    //     cat => cat.id === food.categoryId
+                    // )?.title || '',
+                    // foodType: food?.foodType || '',
+                    // foodTypeId: foodTypes.find(
+                    //     fd => fd.id === food.foodTypeId
+                    // )?.label || '',
+                    category: categories.find(
+                        cat => cat.id === food.categoryId
+                    )?.title || '',
+
+                    categoryTa:
+                        food?.translations?.ta?.category ||
+                        categories.find(cat => cat.id === food.categoryId)?.labelTa ||
+                        '',
+
                     foodType: food?.foodType || '',
-                    foodTypeId: foodTypes.find(fd => fd.id === food.foodTypeId)?.label || '',
+
+                    foodTypeTa:
+                        food?.translations?.ta?.foodType ||
+                        foodTypes.find(fd => fd.id === food.foodTypeId)?.labelTa ||
+                        '',
+
+                    foodTypeId: foodTypes.find(
+                        fd => fd.id === food.foodTypeId
+                    )?.id || '',
                     momType: food.momType,
-                    week: weeks.find(wk => wk.label === food.week)?.label || '',
+                    week: weeks.find(
+                        wk => wk.label === food.week
+                    )?.label || '',
                     month: food.month,
                     region: food.region,
                     symptoms: food.symptoms || [],
                 });
+                // setForm({
+                //     title: food?.title || '',
+                //     titleTa: food?.translations?.ta?.title || '',
+                //     description: food?.description || '',
+                //     descriptionTa: food?.translations?.ta?.description || '',
+                //     status: food?.status || '',
+                //     file: food?.file || '',
+                //     categoryId: food?.categoryId || '',
+                //     category: categories.find(cat => cat.id === food.categoryId)?.title || '',
+                //     foodType: food?.foodType || '',
+                //     foodTypeId: foodTypes.find(fd => fd.id === food.foodTypeId)?.label || '',
+                //     momType: food.momType,
+                //     week: weeks.find(wk => wk.label === food.week)?.label || '',
+                //     month: food.month,
+                //     region: food.region,
+                //     symptoms: food.symptoms || [],
+                // });
                 setViewFood(food)
                 setPreviewUrl(food.file)
                 setIsLoading(false)
@@ -152,8 +251,9 @@ export default function AddArticle() {
             if (data?.response) {
                 const categories = data?.data?.docs.map(item => ({
                     ...item,
-                    label: item.title
-                }))
+                    label: item.title,
+                    labelTa: item?.translations?.ta?.title || ''
+                }));
                 console.log('categories', categories)
                 setCategories(categories);
                 setIsLoading(false)
@@ -195,18 +295,29 @@ export default function AddArticle() {
         }));
         await fetchCategories(value);
     };
+    // const handleCategorySelect = (item) => {
+    //     console.log('item', item)
+    //     setForm((prev) => ({
+    //         ...prev,
+    //         category: item.title,
+    //         categoryId: item.id,
+    //     }));
+    // };
     const handleCategorySelect = (item) => {
-        console.log('item', item)
-        setForm((prev) => ({
-            ...prev,
-            category: item.title,
-            categoryId: item.id,
-        }));
-    };
+    console.log('Selected category:', item);
+
+    setForm((prev) => ({
+        ...prev,
+        category: item.title,
+        categoryTa: item?.translations?.ta?.title || item?.labelTa || '',
+        categoryId: item.id,
+    }));
+};
     const handleFoodTypeSelect = (item) => {
         setForm((prev) => ({
             ...prev,
             foodType: item.label,
+            foodTypeTa: item.labelTa,
             foodTypeId: item.id,
         }));
     };
@@ -222,20 +333,54 @@ export default function AddArticle() {
             week: item.label,
         }));
     };
-    const handleAddSymptoms = () => {
-        if (!foodInput.trim()) return;
-        const newFoods = {
-            id: form.symptoms.length > 0
-                ? form.symptoms[form.symptoms.length - 1].id + 1
-                : 1,
-            description: foodInput,
+    // const handleAddSymptoms = () => {
+    //     if (!foodInput.trim()) return;
+    //     const newFoods = {
+    //         id: form.symptoms.length > 0
+    //             ? form.symptoms[form.symptoms.length - 1].id + 1
+    //             : 1,
+    //         description: foodInput,
+    //     };
+    //     setForm((prev) => ({
+    //         ...prev,
+    //         symptoms: [...prev.symptoms, newFoods],
+    //     }));
+    //     setFoodInput('');
+    // };
+            const handleAddSymptoms = () => {
+
+            if (!foodInput.trim() || !foodInputTa.trim()) {
+                return;
+            }
+
+            const newFoods = {
+                id: form.symptoms.length > 0
+                    ? form.symptoms[form.symptoms.length - 1].id + 1
+                    : 1,
+
+                description: foodInput,
+
+                translations: {
+                    en: {
+                        description: foodInput
+                    },
+                    ta: {
+                        description: foodInputTa
+                    }
+                }
+            };
+
+            setForm((prev) => ({
+                ...prev,
+                symptoms: [
+                    ...prev.symptoms,
+                    newFoods
+                ],
+            }));
+
+            setFoodInput('');
+            setFoodInputTa('');
         };
-        setForm((prev) => ({
-            ...prev,
-            symptoms: [...prev.symptoms, newFoods],
-        }));
-        setFoodInput('');
-    };
     const handleDeleteSymptoms = (idToDelete) => {
         const updatedsymptoms = form.symptoms
             .filter((sympt) => sympt.id !== idToDelete)
@@ -269,11 +414,18 @@ export default function AddArticle() {
             setSubmitLoading(false);
             return;
         }
-        if (!form.title || !form.foodType || !form.file || !form.category || !form.description) {
-            // showError('Invalid Form');
-            setSubmitLoading(false);
-            return;
-        }
+        if (
+                !form.title ||
+                !form.titleTa ||
+                !form.foodType ||
+                !form.file ||
+                !form.category ||
+                !form.description ||
+                !form.descriptionTa
+            ) {
+                setSubmitLoading(false);
+                return;
+            }
         if (form.momType === 'pregMom' && !form.week) {
             showError('Please Select Week');
             setSubmitLoading(false);
@@ -299,7 +451,44 @@ export default function AddArticle() {
                 fileChanged: isFileChanged,
             };
         }
-        const formData = objectToFormData(!isEdit ? form : updateForm)
+        //const formData = objectToFormData(!isEdit ? form : updateForm)
+        // formData.set('titleTa', form.titleTa);
+        // formData.set('descriptionTa', form.descriptionTa);
+        const formData = objectToFormData(
+                !isEdit ? form : updateForm
+            );
+
+            formData.set('titleTa', form.titleTa);
+
+            formData.set(
+                'descriptionTa',
+                form.descriptionTa
+            );
+
+            formData.set(
+                'categoryTa',
+                form.categoryTa
+            );
+
+            formData.set(
+                'foodTypeTa',
+                form.foodTypeTa
+            );
+
+            formData.set(
+                'symptoms',
+                JSON.stringify(form.symptoms)
+            );
+
+            console.log('========== FOOD FORMDATA ==========');
+
+            for (const [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+
+            console.log('====================================');
+
+            manageFoods(formData);
         manageFoods(formData)
     };
     const manageFoods = async (formData) => {
@@ -375,6 +564,23 @@ export default function AddArticle() {
                             />
                         </div>
                         <div className="mt-2">
+                            <Input
+                                label="Tamil Title"
+                                name="titleTa"
+                                value={form.titleTa}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        titleTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+                        </div>
+                        <div className="mt-2">
                             <Textarea
                                 label="Description"
                                 name="description"
@@ -385,6 +591,22 @@ export default function AddArticle() {
                                 disabled={!form.momType}
                             />
                         </div>
+                        <div className="mt-2">
+                                <Textarea
+                                    label="Tamil Description"
+                                    name="descriptionTa"
+                                    value={form.descriptionTa}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            descriptionTa: e.target.value
+                                        })
+                                    }
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                    disabled={!form.momType}
+                                />
+                            </div>
                         <div className="mt-2">
                             <FileUpload
                                 label="Thumbnail"
@@ -412,6 +634,23 @@ export default function AddArticle() {
                             />
                         </div>
                         <div className="mt-2">
+                            <Input
+                                label="Tamil Category"
+                                name="categoryTa"
+                                value={form.categoryTa || ''}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        categoryTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+                        </div>
+                        <div className="mt-2">
                             <AutoCompleteInput
                                 label="Food Type"
                                 options={foodTypes}
@@ -420,6 +659,23 @@ export default function AddArticle() {
                                 formSubmitted={formSubmitted}
                                 disabled={!form.momType}
                                 onSelect={handleFoodTypeSelect}
+                            />
+                        </div>
+                        <div className="mt-2">
+                            <Input
+                                label="Tamil Food Type"
+                                name="foodTypeTa"
+                                value={form.foodTypeTa || ''}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        foodTypeTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
                             />
                         </div>
                         {form.momType === 'newMom' ? (
@@ -485,6 +741,17 @@ export default function AddArticle() {
                                 />
                             </div>
                         </div>
+                        <div className="mt-2">
+                            <Input
+                                placeholder=""
+                                name="symptomsTa"
+                                label="Tamil Symptoms Name"
+                                value={foodInputTa}
+                                required={false}
+                                tamilKeyboard={true}
+                                onChange={(e) => setFoodInputTa(e.target.value)}
+                            />
+                        </div>
                         <div className="d-flex justify-content-end align-items-center mt-2">
                             <Button
                                 label="Add"
@@ -536,7 +803,18 @@ export default function AddArticle() {
                                                         paddingTop: '6px',
                                                     }}
                                                 >
-                                                    <span>{food.description || 'ITEM'}</span>
+                                                    {/* <span>{food.description || 'ITEM'}</span> */}
+                                                    <div>
+                                                        <div>
+                                                            {food?.translations?.en?.description ||
+                                                                food?.description ||
+                                                                'ITEM'}
+                                                        </div>
+
+                                                        <div style={{ marginTop: '3px' }}>
+                                                            {food?.translations?.ta?.description || ''}
+                                                        </div>
+                                                    </div>
                                                     <Image
                                                         src="/assets/icons/delete-icon.svg"
                                                         alt="icon"
