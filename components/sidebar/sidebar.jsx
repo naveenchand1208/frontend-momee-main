@@ -105,6 +105,7 @@ export default function Sidebar({ ontoggle }) {
       ],
     },
     { title: 'Settings', link: '/settings', iconName: '/assets/icons/settings-icon.svg', parentWithChilds: false, submenu: [] },
+    { title: 'App Update', link: '/app-update', iconName: '/assets/icons/settings-icon.svg', parentWithChilds: false, submenu: [] },
     {
       title: 'Feedback',
       link: '#', iconName: '/assets/icons/feedback-icon.svg',

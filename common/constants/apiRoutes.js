@@ -380,5 +380,10 @@ const apiRoutes = {
   viewFavouriteBabyNames: `${BASE_URL}/babyName/getFavorites`,
   //Baby Names Api End
 
+  //App Update api's
+  getAppUpdateConfig: `${BASE_URL}/appUpdate/list`,
+  updateAppUpdateConfig: `${BASE_URL}/appUpdate/update`,
+  //App Update api's End
+
 };
 export default apiRoutes;
