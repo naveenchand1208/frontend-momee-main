@@ -30,6 +30,7 @@ export default function Baby_Animation_Add() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         file: '',
         babySize: '',
         babyWeight: '',
@@ -58,6 +59,7 @@ export default function Baby_Animation_Add() {
     const handleClear = () => {
         setForm({
             name: '',
+            nameTa: '',
             file: '',
             babySize: '',
             babyWeight: '',
@@ -122,9 +124,45 @@ export default function Baby_Animation_Add() {
             const data = await apiRequest(apiRoutes.viewBabyAnimation, 'POST', payload, router);
             if (data?.response) {
                 const template = data?.data;
+                // setForm({
+                //     name: template?.name || '',
+                //     //nameTa: template?.translations?.ta?.name || '',
+                //     nameTa: template?.nameTa ||
+                //             template?.translations?.ta?.name ||
+                //             '',
+                //     // status: template?.status || '',
+                //     file: template?.file || '',
+                //     babySize: template?.babySize || '',
+                //     babyWeight: template?.babyWeight || '',
+                // });
+                // setForm({
+                //     name: template?.name || '',
+                //     nameTa: template?.nameTa || template?.translations?.ta?.name || '',
+                //     file: template?.file || '',
+                //     babySize: template?.babySize || '',
+                //     babyWeight: template?.babyWeight || '',
+                // });
+                const englishName = template?.name || '';
+                let tamilName =
+                    template?.nameTa ||
+                    template?.translations?.ta?.name ||
+                    '';
+
+                // Auto Tamil for existing Week records
+                if (!tamilName && englishName) {
+                    const weekMatch = englishName.match(/^Week\s+(\d+)$/i);
+
+                    if (weekMatch) {
+                        tamilName = `வாரம் ${weekMatch[1]}`;
+                    }
+                }
+
+                console.log("ENGLISH TITLE:", englishName);
+                console.log("TAMIL TITLE:", tamilName);
+
                 setForm({
-                    name: template?.name || '',
-                    // status: template?.status || '',
+                    name: englishName,
+                    nameTa: tamilName,
                     file: template?.file || '',
                     babySize: template?.babySize || '',
                     babyWeight: template?.babyWeight || '',
@@ -142,7 +180,7 @@ export default function Baby_Animation_Add() {
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.name || !form.file || !form.babySize || !form.babyWeight) {
+        if (!form.name || !form.nameTa || !form.file || !form.babySize || !form.babyWeight) {
             setButtonLoading(false);
             return;
         }
@@ -157,8 +195,26 @@ export default function Baby_Animation_Add() {
                 fileChanged: isFileChanged,
             };
         }
+        // const preparedForm = {
+        //     ...updateForm,
+        //     nameTa: updateForm.nameTa
+        // };
+        const preparedForm = {
+            ...updateForm,
 
-        const formData = objectToFormData(updateForm);
+            translations: {
+                en: {
+                    name: updateForm.name || ''
+                },
+
+                ta: {
+                    name: updateForm.nameTa || ''
+                }
+            }
+        };
+
+        const formData = objectToFormData(preparedForm);
+        //const formData = objectToFormData(updateForm);
         manageTemplate(formData);
     };
     const manageTemplate = async (formData) => {
@@ -201,6 +257,22 @@ export default function Baby_Animation_Add() {
                                 formSubmitted={formSubmitted}
                                 onSelect={handleWeekSelect}
                                 value={form.name}
+                            />
+                        </div>
+                        <div className="col-md-12 mb-3">
+                            <Input
+                                name="nameTa"
+                                label="Title (Tamil)"
+                                value={form.nameTa}
+                                required
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        nameTa: e.target.value
+                                    }))
+                                }
                             />
                         </div>
                         <div className="col-md-12 mb-4">

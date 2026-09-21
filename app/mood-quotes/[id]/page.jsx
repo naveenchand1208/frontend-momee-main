@@ -18,10 +18,27 @@ export default function AddQuotes() {
         10: '🙏', 11: '🏆', 12: '😃', 13: '🤩', 14: '❤️'
     };
 
+    // const initialFormState = {
+    //     date: '',
+    //     quotes: Object.fromEntries(Object.keys(moodEmojis).concat('default').map(k => [k, '']))
+    // };
     const initialFormState = {
-        date: '',
-        quotes: Object.fromEntries(Object.keys(moodEmojis).concat('default').map(k => [k, '']))
-    };
+    date: '',
+
+    // English
+    quotes: Object.fromEntries(
+        Object.keys(moodEmojis)
+            .concat('default')
+            .map(k => [k, ''])
+    ),
+
+    // Tamil
+    quotesTa: Object.fromEntries(
+        Object.keys(moodEmojis)
+            .concat('default')
+            .map(k => [k, ''])
+    )
+};
 
     const { id } = useParams();
     const router = useRouter();
@@ -58,25 +75,156 @@ export default function AddQuotes() {
     }, [isEdit]);
 
     const viewQuotes = async (id) => {
-        try {
-            const payload = { params: { id } };
-            const data = await apiRequest(apiRoutes.viewMoodQuotes, "POST", payload, router);
-
-            if (data?.response) {
-                const quotesData = data?.data;
-
-                setForm({
-                    id: quotesData.id || "",
-                    date: convertToInputDate(quotesData.date) || "",
-                    quotes: quotesData.quotes || {},
-                });
-
-                setIsLoading(false);
+    try {
+        const payload = {
+            params: {
+                id: id
             }
-        } catch {
+        };
+
+        const data = await apiRequest(
+            apiRoutes.viewMoodQuotes,
+            "POST",
+            payload,
+            router
+        );
+
+        console.log("========== MOOD QUOTES API RESPONSE ==========");
+        console.log("DATA:", data);
+
+        if (data?.response) {
+
+            const quotesData = data.data;
+
+            console.log("QUOTES DATA:", quotesData);
+
+            // Get Tamil quotes directly
+            const tamilQuotes =
+                quotesData?.translations?.ta?.quotes || {};
+
+            console.log("TAMIL QUOTES:", tamilQuotes);
+            console.log(
+                "TAMIL DEFAULT:",
+                tamilQuotes?.default
+            );
+
+            // Build Tamil object explicitly
+            const tamilForm = {
+                0: tamilQuotes?.['0'] || '',
+                1: tamilQuotes?.['1'] || '',
+                2: tamilQuotes?.['2'] || '',
+                3: tamilQuotes?.['3'] || '',
+                4: tamilQuotes?.['4'] || '',
+                5: tamilQuotes?.['5'] || '',
+                6: tamilQuotes?.['6'] || '',
+                7: tamilQuotes?.['7'] || '',
+                8: tamilQuotes?.['8'] || '',
+                9: tamilQuotes?.['9'] || '',
+                10: tamilQuotes?.['10'] || '',
+                11: tamilQuotes?.['11'] || '',
+                12: tamilQuotes?.['12'] || '',
+                13: tamilQuotes?.['13'] || '',
+                14: tamilQuotes?.['14'] || '',
+
+                // THIS IS THE IMPORTANT ONE
+                default: tamilQuotes?.default || ''
+            };
+
+            console.log(
+                "FINAL TAMIL FORM:",
+                tamilForm
+            );
+
+            setForm({
+                id: quotesData?.id || '',
+
+                date:
+                    convertToInputDate(
+                        quotesData?.date
+                    ) || '',
+
+                quotes: {
+                    ...(quotesData?.quotes || {})
+                },
+
+                quotesTa: tamilForm
+            });
+
             setIsLoading(false);
         }
-    };
+
+    } catch (error) {
+
+        console.error(
+            "Mood Quotes View Error:",
+            error
+        );
+
+        setIsLoading(false);
+    }
+};
+
+    // const viewQuotes = async (id) => {
+    //     try {
+    //         const payload = { params: { id } };
+    //         const data = await apiRequest(apiRoutes.viewMoodQuotes, "POST", payload, router);
+
+    //         if (data?.response) {
+    //             const quotesData = data?.data;
+
+    //             // setForm({
+    //             //     id: quotesData.id || "",
+    //             //     date: convertToInputDate(quotesData.date) || "",
+    //             //     quotes: quotesData.quotes || {},
+    //             // });
+    //             // setForm({
+    //             //     id: quotesData.id || '',
+    //             //     date:
+    //             //         convertToInputDate(
+    //             //             quotesData.date
+    //             //         ) || '',
+    //             //     quotes:
+    //             //         quotesData.quotes || {},
+                    
+    //             //     quotesTa:
+    //             //         quotesData?.quotesTa ||
+    //             //         quotesData?.translations?.ta?.quotes ||
+    //             //         {},
+    //             //         default:
+    //             //             quotesData?.translations?.ta?.quotes?.default ||
+    //             //             quotesData?.quotesTa?.default ||
+    //             //             ''
+    //             // });
+    //             setForm({
+    //                 id: quotesData.id || '',
+    //                 date:
+    //                     convertToInputDate(
+    //                         quotesData.date
+    //                     ) || '',
+    //                 // English
+    //                 quotes:
+    //                     quotesData?.quotes || {},
+    //                 // Tamil
+    //                 quotesTa: {
+    //                     ...(
+    //                         quotesData?.quotesTa ||
+    //                         quotesData?.translations?.ta?.quotes ||
+    //                         {}
+    //                     ),
+    //                     // IMPORTANT: Tamil Default Quote
+    //                     default:
+    //                         quotesData?.quotesTa?.default ||
+    //                         quotesData?.translations?.ta?.quotes?.default ||
+    //                         ''
+    //                 }
+    //             });
+
+    //             setIsLoading(false);
+    //         }
+    //     } catch {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     const handleQuoteChange = (key, value) => {
         setForm(prev => ({
@@ -84,32 +232,115 @@ export default function AddQuotes() {
             quotes: { ...prev.quotes, [key]: value }
         }));
     };
+    const handleTamilQuoteChange = (key, value) => {
+        setForm(prev => ({
+            ...prev,
+            quotesTa: {
+                ...prev.quotesTa,
+                [key]: value
+            }
+        }));
+    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setButtonLoading(true);
+    e.preventDefault();
 
-        if (!form.date) {
-            showError('Please select a date');
-            setButtonLoading(false);
-            return;
-        }
+    setButtonLoading(true);
 
-        const payload = { params: { id: form.id, date: form.date, quotes: form.quotes } };
-        const action = !isEdit ? apiRoutes.addMoodQuotes : apiRoutes.updateMoodQuotes;
+    if (!form.date) {
+        showError('Please select a date');
+        setButtonLoading(false);
+        return;
+    }
 
-        try {
-            const data = await apiRequest(action, 'POST', payload, router);
-            if (data?.response) {
-                showSuccess(isEdit ? 'Quotes updated successfully!' : 'Quotes added successfully!');
-                router.push('/mood-quotes');
-            }
-        } catch {
-            showError('Something went wrong');
-        } finally {
-            setButtonLoading(false);
+    const payload = {
+        params: {
+            id: form.id,
+            date: form.date,
+
+            // English
+            quotes: form.quotes,
+
+            // Tamil
+            quotesTa: form.quotesTa
         }
     };
+
+    console.log(
+        '========== MOOD QUOTES PAYLOAD =========='
+    );
+
+    console.log('English:', form.quotes);
+    console.log('Tamil:', form.quotesTa);
+
+    const action =
+        !isEdit
+            ? apiRoutes.addMoodQuotes
+            : apiRoutes.updateMoodQuotes;
+
+    try {
+
+        const data = await apiRequest(
+            action,
+            'POST',
+            payload,
+            router
+        );
+
+        if (data?.response) {
+
+            showSuccess(
+                isEdit
+                    ? 'Quotes updated successfully!'
+                    : 'Quotes added successfully!'
+            );
+
+            router.push('/mood-quotes');
+        }
+
+    } catch (error) {
+
+        console.error(
+            'Mood Quotes Error:',
+            error
+        );
+
+        showError(
+            'Something went wrong'
+        );
+
+    } finally {
+
+        setButtonLoading(false);
+
+    }
+};
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setButtonLoading(true);
+
+    //     if (!form.date) {
+    //         showError('Please select a date');
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+
+    //     const payload = { params: { id: form.id, date: form.date, quotes: form.quotes } };
+    //     const action = !isEdit ? apiRoutes.addMoodQuotes : apiRoutes.updateMoodQuotes;
+
+    //     try {
+    //         const data = await apiRequest(action, 'POST', payload, router);
+    //         if (data?.response) {
+    //             showSuccess(isEdit ? 'Quotes updated successfully!' : 'Quotes added successfully!');
+    //             router.push('/mood-quotes');
+    //         }
+    //     } catch {
+    //         showError('Something went wrong');
+    //     } finally {
+    //         setButtonLoading(false);
+    //     }
+    // };
 
     return (
         <div className="max-w-6xl mx-auto mt-10">
@@ -144,6 +375,21 @@ export default function AddQuotes() {
                                     title={form.quotes.default}
                                 />
                             </div>
+
+                            <Input
+                                name="defaultTa"
+                                label="Default Quote (Tamil)"
+                                placeholder="தமிழ் வாசகத்தை உள்ளிடவும்..."
+                                value={form.quotesTa.default}
+                                onChange={(e) =>
+                                    handleTamilQuoteChange(
+                                        'default',
+                                        e.target.value
+                                    )
+                                }
+                                tamilKeyboard={true}
+                                title={form.quotesTa.default}
+                            />
                         </div>
 
 
@@ -161,13 +407,40 @@ export default function AddQuotes() {
                                     <div className="emoji">{mood.split(' ')[0]}</div>
                                     <div className="mood-label">{mood.split(' ')[1]}</div>
 
-                                    <input
+                                    {/* <input
                                         type="text"
                                         placeholder="Write a quote..."
                                         value={form.quotes[key]}
                                         onChange={(e) => handleQuoteChange(key, e.target.value)}
                                         className="quote-input"
                                         title={form.quotes[key]}
+                                    /> */}
+                                    <input
+                                        type="text"
+                                        placeholder="Write English quote..."
+                                        value={form.quotes[key]}
+                                        onChange={(e) =>
+                                            handleQuoteChange(
+                                                key,
+                                                e.target.value
+                                            )
+                                        }
+                                        className="quote-input"
+                                        title={form.quotes[key]}
+                                    />
+
+                                    <Input
+                                        name={`quoteTa-${key}`}
+                                        placeholder="தமிழ் வாசகம்..."
+                                        value={form.quotesTa[key]}
+                                        onChange={(e) =>
+                                            handleTamilQuoteChange(
+                                                key,
+                                                e.target.value
+                                            )
+                                        }
+                                        tamilKeyboard={true}
+                                        title={form.quotesTa[key]}
                                     />
                                 </div>
                             ))}

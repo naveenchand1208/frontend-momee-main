@@ -20,10 +20,12 @@ import { useDispatch } from 'react-redux';
 export default function AddArticle() {
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         status: 'Active',
         file: '',
         // banner: '',
         description: '',
+        descriptionTa: '',
         duration: '',
         momType: '',
         category: '',
@@ -169,47 +171,161 @@ export default function AddArticle() {
         setBackLoading(true);
         router.push('/articles');
     }
-    const viewArticles = async (id) => {
-        try {
-            const payload = { params: { id } }
-            console.log('Id', id);
-            const data = await apiRequest(apiRoutes.viewArticles, 'POST', payload, router);
-            if (data?.response) {
-                const article = data?.data;
-                setForm({
-                    title: article?.title || '',
-                    status: article?.status || '',
-                    file: article?.file || '',
-                    // banner: article?.banner || '',
-                    description: article?.description || '',
-                    duration: article?.duration || '',
-                    categoryId: article?.categoryId || '',
-                    category: categories.find(cat => cat.id === article.categoryId)?.title || '',
-                    momType: article.momType,
-                    week: article.week,
-                    month: article.month,
-                });
-                setContent(article.description)
-                setViewArticle(article)
-                setPreviewUrl(article.file)
-                // setBannerUrl(article.banner)
-                setIsLoading(false)
+
+const viewArticles = async (id) => {
+    try {
+        const payload = {
+            params: {
+                id,
+                admin: true
             }
-        } catch (error) {
-            console.log('error', error)
+        };
+
+        console.log('VIEW ARTICLE REQUEST:', payload);
+
+        const data = await apiRequest(
+            apiRoutes.viewArticles,
+            'POST',
+            payload,
+            router
+        );
+
+        console.log('VIEW ARTICLE RESPONSE:', data);
+
+        if (data?.response) {
+            const article = data?.data;
+
+            console.log('ARTICLE:', article);
+
+            console.log(
+                'ENGLISH TITLE:',
+                article?.title
+            );
+
+            console.log(
+                'TAMIL TITLE:',
+                article?.translations?.ta?.title
+            );
+
+            console.log(
+                'ENGLISH DESCRIPTION:',
+                article?.description
+            );
+
+            console.log(
+                'TAMIL DESCRIPTION:',
+                article?.translations?.ta?.description
+            );
+
+            setForm({
+                title: article?.title || '',
+
+                titleTa:
+                    article?.translations?.ta?.title || '',
+
+                status: article?.status || '',
+
+                file: article?.file || '',
+
+                description:
+                    article?.description || '',
+
+                descriptionTa:
+                    article?.translations?.ta?.description || '',
+
+                duration: article?.duration || '',
+
+                categoryId:
+                    article?.categoryId || '',
+
+                category:
+                    categories.find(
+                        cat => cat.id === article?.categoryId
+                    )?.title || '',
+
+                momType: article?.momType || '',
+
+                week: article?.week || '',
+
+                month: article?.month || ''
+            });
+
+            setContent(article?.description || '');
+
+            setViewArticle(article);
+
+            setPreviewUrl(article?.file || '');
+
+            setIsLoading(false);
         }
+
+    } catch (error) {
+        console.log('VIEW ARTICLE ERROR:', error);
+        setIsLoading(false);
     }
+};
+
+
+
+
+    // const viewArticles = async (id) => {
+    //     try {
+    //        // const payload = { params: { id } }
+    //        const payload = {
+    //             params: {
+    //                 id,
+    //                 admin: true
+    //             }
+    //         };
+    //         console.log('Id', id);
+    //         const data = await apiRequest(apiRoutes.viewArticles, 'POST', payload, router);
+    //         if (data?.response) {
+    //             const article = data?.data;
+    //             setForm({
+    //                 title: article?.title || '',
+    //                 titleTa: article?.translations?.ta?.title || '',
+    //                 status: article?.status || '',
+    //                 file: article?.file || '',
+    //                 // banner: article?.banner || '',
+    //                 description: article?.description || '',
+    //                 descriptionTa: article?.translations?.ta?.description || '',
+    //                 duration: article?.duration || '',
+    //                 categoryId: article?.categoryId || '',
+    //                 category: categories.find(cat => cat.id === article.categoryId)?.title || '',
+    //                 momType: article.momType,
+    //                 week: article.week,
+    //                 month: article.month,
+    //             });
+    //            // setContent(article.description)
+    //             setContent(article.description || '')
+    //             setViewArticle(article)
+    //             setPreviewUrl(article.file)
+    //             // setBannerUrl(article.banner)
+    //             setIsLoading(false)
+    //         }
+    //     } catch (error) {
+    //         console.log('error', error)
+    //     }
+    // }
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setFormSubmitted(true);
         setButtonLoading(true);
-        if (!form.title || !form.duration || !form.file || !form.category) {
+        if (!form.title || !form.titleTa || !form.duration || !form.file || !form.category) {
             // showError('Invalid Form');
             setButtonLoading(false);
             return;
         }
         if (form.description.length === 0) {
             showError('Please add at least one description');
+            setFormSubmitted(false);
+            setButtonLoading(false);
+            return;
+        }
+        if (!form.descriptionTa || form.descriptionTa === '<p><br></p>'
+        ) {
+            showError('Please add Tamil description');
             setFormSubmitted(false);
             setButtonLoading(false);
             return;
@@ -239,8 +355,17 @@ export default function AddArticle() {
         const preparedForm = {
             ...(isEdit ? updateForm : form),
             duration: Number(form.duration),
+            translations: {
+                    en: {
+                        title: form.title,
+                        description: form.description
+                    },
+                    ta: {
+                        title: form.titleTa,
+                        description: form.descriptionTa
+                    }
+                }
         };
-
         const formData = objectToFormData(preparedForm);
         manageArticles(formData)
     };
@@ -299,6 +424,20 @@ export default function AddArticle() {
                                 required={true}
                                 formSubmitted={formSubmitted}
                                 disabled={!form.momType}
+                            />
+                        </div>
+                        <div className="mt-3">
+                            <Input
+                                label="Title (Tamil)"
+                                name="titleTa"
+                                value={form.titleTa}
+                                onChange={(e) =>
+                                    setForm({ ...form, titleTa: e.target.value })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
                             />
                         </div>
                         <div className="mt-3">
@@ -392,7 +531,7 @@ export default function AddArticle() {
                             />
                         </div>
                     </div>
-                    <div className="custom-form editor-container" style={{ width: '65%', height: 'max-content' }}>
+                    {/* <div className="custom-form editor-container" style={{ width: '65%', height: 'max-content' }}>
                         <label className="form-label mb-2"></label>
                         <RichTextEditor
                             ref={editorRef}
@@ -403,7 +542,50 @@ export default function AddArticle() {
                             formSubmitted={formSubmitted}
                             error={formSubmitted && (!form.description || form.description === '<p><br></p>')}
                         />
-                    </div>
+                    </div> */}
+                    <div
+                            className="custom-form editor-container"
+                            style={{ width: '65%', height: 'max-content' }}
+                        >
+                            <label className="form-label mb-2">
+                                Description (English)
+                            </label>
+
+                            <RichTextEditor
+                                ref={editorRef}
+                                height={'400px'}
+                                value={content || ''}
+                                onChange={handleEditorChange}
+                                required
+                                formSubmitted={formSubmitted}
+                                error={
+                                    formSubmitted &&
+                                    (!form.description || form.description === '<p><br></p>')
+                                }
+                            />
+
+                            <label className="form-label mb-2 mt-4">
+                                Description (Tamil)
+                            </label>
+
+                            <RichTextEditor
+                                height={'400px'}
+                                value={form.descriptionTa || ''}
+                                onChange={(value) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        descriptionTa: value
+                                    }))
+                                }
+                                required
+                                formSubmitted={formSubmitted}
+                                error={
+                                    formSubmitted &&
+                                    (!form.descriptionTa ||
+                                        form.descriptionTa === '<p><br></p>')
+                                }
+                            />
+                        </div>
                 </form>
             )}
         </div>

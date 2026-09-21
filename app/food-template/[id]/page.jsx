@@ -27,6 +27,7 @@ export default function Foods_Template_Add() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         file: '',
         status: 'Active',
     });
@@ -51,8 +52,14 @@ export default function Foods_Template_Add() {
         { label: 'Inactive', value: 'Inactive' },
     ];
     const handleClear = () => {
+        // setForm({
+        //     name: '',
+        //     file: '',
+        //     status: 'Active',
+        // });
         setForm({
             name: '',
+            nameTa: '',
             file: '',
             status: 'Active',
         });
@@ -88,15 +95,39 @@ export default function Foods_Template_Add() {
     };
     const viewTemplates = async (id) => {
         try {
-            const payload = { params: { id } };
+            //const payload = { params: { id } };
+            const payload = {
+            params: {
+                id,
+                admin: true
+            }
+        };
             const data = await apiRequest(apiRoutes.viewFoodTemplate, 'POST', payload, router);
             if (data?.response) {
                 const template = data?.data;
+                // setForm({
+                //     name: template?.name || '',
+                //     status: template?.status || '',
+                //     file: template?.file || '',
+                // });
                 setForm({
-                    name: template?.name || '',
-                    status: template?.status || '',
-                    file: template?.file || '',
-                });
+                        name:
+                            template?.translations?.en?.name ||
+                            template?.name ||
+                            '',
+
+                        nameTa:
+                            template?.translations?.ta?.name ||
+                            '',
+
+                        status:
+                            template?.status ||
+                            '',
+
+                        file:
+                            template?.file ||
+                            '',
+                    });
                 setViewform(template);
                 setPreviewUrl(template.file || '');
                 setIsLoading(false);
@@ -105,12 +136,14 @@ export default function Foods_Template_Add() {
             console.error('Error loading template', error);
         }
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.name || !form.file) {
+        if (!form.name || !form.nameTa || !form.file) {
             setButtonLoading(false);
             return;
         }
@@ -118,7 +151,11 @@ export default function Foods_Template_Add() {
         let updateForm = { ...form };
 
         if (isEdit) {
-            const isFileChanged = form?.file?.public_id !== viewform?.file?.public_id;
+
+            const isFileChanged =
+                form?.file?.public_id !==
+                viewform?.file?.public_id;
+
             updateForm = {
                 ...viewform,
                 ...form,
@@ -127,8 +164,82 @@ export default function Foods_Template_Add() {
         }
 
         const formData = objectToFormData(updateForm);
+
+        formData.set('name', form.name);
+        formData.set('nameTa', form.nameTa);
+        formData.set('status', form.status);
+
+        if (form.file) {
+            formData.set('file', form.file);
+        }
+
+        if (isEdit) {
+            formData.set('id', id);
+            formData.set(
+                'fileChanged',
+                String(updateForm.fileChanged)
+            );
+        }
+
+        console.log('========== FORM DATA ==========');
+
+        for (const [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+
         manageTemplate(formData);
     };
+
+
+//     const handleSubmit = async (e) => {
+//         e.preventDefault();
+//         setFormSubmitted(true);
+//         setButtonLoading(true);
+
+//         if (!form.name || !form.nameTa || !form.file) {
+//             setButtonLoading(false);
+//             return;
+//         }
+
+//         let updateForm = { ...form };
+
+//         if (isEdit) {
+//             const isFileChanged = form?.file?.public_id !== viewform?.file?.public_id;
+//             updateForm = {
+//                 ...viewform,
+//                 ...form,
+//                 fileChanged: isFileChanged,
+//             };
+//         }
+
+//         // const formData = objectToFormData(updateForm);
+//         // manageTemplate(formData);
+//         const formData = objectToFormData(updateForm);
+
+//             formData.set('name', form.name);
+//             formData.set('nameTa', form.nameTa);
+//             formData.set('status', form.status);
+
+//             if (form.file) {
+//                 formData.set('file', form.file);
+//             }
+
+//             if (isEdit) {
+//                 formData.set('id', id);
+//                 formData.set(
+//                     'fileChanged',
+//                     String(updateForm.fileChanged)
+//                 );
+//             }
+
+//             console.log('========== FORM DATA ==========');
+
+//             for (const [key, value] of formData.entries()) {
+//                 console.log(key, value);
+//             }
+
+//             manageTemplate(formData);
+// };
     const manageTemplate = async (formData) => {
         const action = isEdit ? apiRoutes.updateFoodTemplate : apiRoutes.addFoodTemplate;
 
@@ -162,6 +273,23 @@ export default function Foods_Template_Add() {
                                 formSubmitted={formSubmitted}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                             />
+                        </div>                        
+                        <div className="col-md-12 mb-3">
+                            <Input
+                                name="nameTa"
+                                label="Tamil Title"
+                                value={form.nameTa}
+                                required
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        nameTa: e.target.value
+                                    })
+                                }
+                            />
+
                         </div>
                         <div className="col-md-12 mb-4">
                             <FileUpload

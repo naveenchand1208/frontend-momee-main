@@ -139,35 +139,119 @@ export default function NewMom() {
   }, []);
   useEffect(() => {
     if (fetchedCount.current) return;
+
     fetchedCount.current = true;
+
     const fetchUserCounts = async () => {
-      try {
-        const activePayload = { params: { momType: 'newMom' } };
-        const inactivePayload = { params: { momType: 'newMom' } };
+        try {
+            const activePayload = {
+                params: {
+                    momType: 'newMom'
+                }
+            };
 
-        const [activeRes, inactiveRes] = await Promise.all([
-          apiRequest(apiRoutes.activeUsersCount, 'POST', activePayload, router),
-          apiRequest(apiRoutes.inActiveUsersCount, 'POST', inactivePayload, router),
-        ]);
-        if (activeRes?.response && inactiveRes?.response) {
-          setUserCountData(prev => ({
-            ...prev,
-            activeUsersCount: activeRes.data.counts || 0,
-            activeUsersIds: activeRes.data.userIds || [],
-            inactiveUsersCount: inactiveRes.data?.last7Days?.count ?? 0,
-            inactiveUsersIds: inactiveRes.data.last7Days.userIds || [],
-          }));
+            const inactivePayload = {
+                params: {
+                    momType: 'newMom'
+                }
+            };
 
-          setInactiveRangeData(inactiveRes.data);
-          console.log("Inactive data", inactiveRes.data);
+            const totalPayload = {
+                params: {
+                    momType: 'newMom'
+                }
+            };
+
+            const [activeRes, inactiveRes, totalRes] = await Promise.all([
+                apiRequest(
+                    apiRoutes.activeUsersCount,
+                    'POST',
+                    activePayload,
+                    router
+                ),
+
+                apiRequest(
+                    apiRoutes.inActiveUsersCount,
+                    'POST',
+                    inactivePayload,
+                    router
+                ),
+
+                apiRequest(
+                    apiRoutes.totalUsersCount,
+                    'POST',
+                    totalPayload,
+                    router
+                )
+            ]);
+
+            console.log('New Mom Active:', activeRes);
+            console.log('New Mom Inactive:', inactiveRes);
+            console.log('New Mom Total:', totalRes);
+
+            setUserCountData(prev => ({
+                ...prev,
+
+                activeUsersCount:
+                    activeRes?.data?.counts || 0,
+
+                activeUsersIds:
+                    activeRes?.data?.userIds || [],
+
+                inactiveUsersCount:
+                    inactiveRes?.data?.last7Days?.count || 0,
+
+                inactiveUsersIds:
+                    inactiveRes?.data?.last7Days?.userIds || [],
+
+                totalUsersCount:
+                    totalRes?.data?.count || 0
+            }));
+
+            if (inactiveRes?.response) {
+                setInactiveRangeData(inactiveRes.data);
+            }
+
+        } catch (err) {
+            console.error('Failed to fetch user counts:', err);
         }
-      } catch (err) {
-        console.error('Failed to fetch user counts:', err);
-      }
     };
 
     fetchUserCounts();
-  }, []);
+}, []);
+
+  // useEffect(() => {
+  //   if (fetchedCount.current) return;
+  //   fetchedCount.current = true;
+  //   const fetchUserCounts = async () => {
+  //     try {
+  //       const activePayload = { params: { momType: 'newMom' } };
+  //       const inactivePayload = { params: { momType: 'newMom' } };
+
+  //       const [activeRes, inactiveRes] = await Promise.all([
+  //         apiRequest(apiRoutes.activeUsersCount, 'POST', activePayload, router),
+  //         apiRequest(apiRoutes.inActiveUsersCount, 'POST', inactivePayload, router),
+  //       ]);
+  //       if (activeRes?.response && inactiveRes?.response) {
+  //         setUserCountData(prev => ({
+  //           ...prev,
+  //           activeUsersCount: activeRes.data.counts || 0,
+  //           activeUsersIds: activeRes.data.userIds || [],
+  //           inactiveUsersCount: inactiveRes.data?.last7Days?.count ?? 0,
+  //           inactiveUsersIds: inactiveRes.data.last7Days.userIds || [],
+  //         }));
+
+  //         setInactiveRangeData(inactiveRes.data);
+  //         console.log("Inactive data", inactiveRes.data);
+  //       }
+  //     } catch (err) {
+  //       console.error('Failed to fetch user counts:', err);
+  //     }
+  //   };
+
+  //   fetchUserCounts();
+  // }, []);
+
   const handleView = (row) => {
     console.log('Parent received VIEW action:', row);
     router.push(`/new-mom/${row?.id}`);
@@ -255,6 +339,12 @@ export default function NewMom() {
       // ],
       // onDropdownChange: handleInactiveRangeChange,
     },
+    {
+        title: "Total Users",
+        subTitle: "totalUsersCount",
+        count: `${userCountData?.totalUsersCount ?? '-'}`,
+        iconPath: '/assets/icons/active-icon.svg'
+    }
   ]
   const fetchUsers = async (pageNum = handleToggleStatus1, limit = 5, options = {}) => {
     setIsLoading(true);

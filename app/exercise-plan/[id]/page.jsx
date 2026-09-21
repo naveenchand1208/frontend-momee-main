@@ -29,6 +29,7 @@ export default function Exercise_Plan_Add() {
     const [isLoading, setIsLoading] = useState(true);
     const [form, setForm] = useState({
         planName: '',
+        planNameTa: '',
         planAmount: '',
         durationMonths: '',
         deviceType: '',
@@ -103,32 +104,88 @@ export default function Exercise_Plan_Add() {
     //     setFormSubmitted(false);
     // };
 
+    // const viewExercisePlan = async (id) => {
+    //     try {
+    //        // const payload = { params: { id } };
+    //        const payload = {
+    //                 params: {
+    //                     id,
+    //                     admin: true
+    //                 }
+    //             };
+    //         const data = await apiRequest(apiRoutes.viewExerciseSubscription, 'POST', payload, router);
+    //         if (data?.response) {
+    //             const plan = data?.data;
+    //             setForm({
+    //                 planName: plan?.planName || '',
+    //                 //planNameTa: plan?.translations?.ta?.name || plan?.planNameTa || '',
+    //                 planNameTa: plan?.planNameTa || plan?.translations?.ta?.name || '',
+    //                 planAmount: plan?.planAmount || '',
+    //                 durationMonths: plan?.durationMonths || '',
+    //                 deviceType: plan?.deviceType || '',
+    //                 // status: plan?.status || '',
+    //             });
+    //             setViewform(plan);
+    //             setIsLoading(false);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error loading template', error);
+    //     }
+    // };
     const viewExercisePlan = async (id) => {
-        try {
-            const payload = { params: { id } };
-            const data = await apiRequest(apiRoutes.viewExerciseSubscription, 'POST', payload, router);
-            if (data?.response) {
-                const plan = data?.data;
-                setForm({
-                    planName: plan?.planName || '',
-                    planAmount: plan?.planAmount || '',
-                    durationMonths: plan?.durationMonths || '',
-                    deviceType: plan?.deviceType || '',
-                    // status: plan?.status || '',
-                });
-                setViewform(plan);
-                setIsLoading(false);
+    try {
+        const payload = {
+            params: {
+                id: id,
+                admin: true
             }
-        } catch (error) {
-            console.error('Error loading template', error);
+        };
+
+        console.log("VIEW EXERCISE REQUEST:", payload);
+
+        const data = await apiRequest(
+            apiRoutes.viewExerciseSubscription,
+            'POST',
+            payload,
+            router
+        );
+
+        console.log("VIEW EXERCISE RESPONSE:", data);
+
+        if (data?.response) {
+            const plan = data?.data;
+
+            console.log("PLAN DATA:", plan);
+            console.log("ENGLISH:", plan?.planName);
+            console.log("TAMIL DIRECT:", plan?.planNameTa);
+            console.log("TAMIL TRANSLATION:", plan?.translations?.ta?.name);
+
+            setForm({
+                planName: plan?.planName || '',
+                planNameTa:
+                    plan?.planNameTa ||
+                    plan?.translations?.ta?.name ||
+                    '',
+                planAmount: plan?.planAmount || '',
+                durationMonths: plan?.durationMonths || '',
+                deviceType: plan?.deviceType || '',
+            });
+
+            setViewform(plan);
+            setIsLoading(false);
         }
-    };
+    } catch (error) {
+        console.error('Error loading exercise plan:', error);
+        setIsLoading(false);
+    }
+};
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.planName || !form.planAmount || !form.durationMonths || !form.deviceType) {
+        if (!form.planName || !form.planNameTa || !form.planAmount || !form.durationMonths || !form.deviceType) {
             setButtonLoading(false);
             showError('Please Fill Forms');
             return;
@@ -159,15 +216,21 @@ export default function Exercise_Plan_Add() {
                 planAmount: updateForm.planAmount,
                 durationMonths: updateForm.durationMonths,
                 deviceType: updateForm.deviceType,
+                translations: {
+                        en: {
+                            name: updateForm.planName
+                        },
+                        ta: {
+                            name: updateForm.planNameTa
+                        }
+                    }
                 // status: updateForm.status,
             }
         };
         manageExercisePlan(payload);
     };
     const manageExercisePlan = async (payload) => {
-        console.log('payload', payload)
         const action = isEdit ? apiRoutes.updateExerciseSubscription : apiRoutes.addExerciseSubscription;
-
         try {
             const data = await apiRequest(action, 'POST', payload, router);
             if (data?.response) {
@@ -224,6 +287,19 @@ export default function Exercise_Plan_Add() {
                                 formSubmitted={formSubmitted}
                                 required
                                 onChange={(e) => setForm({ ...form, planName: e.target.value })}
+                            />
+                        </div>
+                        <div className="col-md-12 mb-1">
+                            <Input
+                                name="planNameTa"
+                                label="Plan Name (Tamil)"
+                                value={form.planNameTa}
+                                formSubmitted={formSubmitted}
+                                required
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({ ...form, planNameTa: e.target.value })
+                                }
                             />
                         </div>
 

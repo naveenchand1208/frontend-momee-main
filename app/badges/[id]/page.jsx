@@ -17,6 +17,7 @@ import { CircularProgress } from '@mui/material';
 export default function AddPodCasts() {
     const [form, setForm] = useState({
         title: '',
+        titleTa: '',
         status: 'Active',
         file: '',
         momType: '',
@@ -80,14 +81,27 @@ export default function AddPodCasts() {
             const data = await apiRequest(apiRoutes.viewBadges, 'POST', payload, router);
             if (data?.response) {
                 const badge = data?.data;
+                // setForm({
+                //     title: badge?.title || '',
+                //     titleTa: badge?.translations?.ta?.title || '',
+                //     status: badge?.status || '',
+                //     file: badge?.file || '',
+                //     momType: badge.momType,
+                //     week: badge.week,
+                //     month: badge.month,
+                // });
                 setForm({
-                    title: badge?.title || '',
-                    status: badge?.status || '',
-                    file: badge?.file || '',
-                    momType: badge.momType,
-                    week: badge.week,
-                    month: badge.month,
-                });
+                title: badge?.title || '',
+                titleTa:
+                    badge?.titleTa ||
+                    badge?.translations?.ta?.title ||
+                    '',
+                status: badge?.status || '',
+                file: badge?.file || '',
+                momType: badge?.momType || '',
+                week: badge?.week || '',
+                month: badge?.month || '',
+            });
                 setViewBadges(badge)
                 setPreviewUrl(badge.file)
                 setIsLoading(false)
@@ -135,38 +149,95 @@ export default function AddPodCasts() {
         setBackLoading(true);
         router.push('/badges');
     }
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setFormSubmitted(true);
-        setButtonLoading(true);
-        if (!form.title || !form.file) {
-            // showError('Invalid Form');
-            setButtonLoading(false);
-            return;
-        }
-        if (form.momType === 'pregMom' && !form.week) {
-            showError('Please Select Week');
-            setFormSubmitted(false);
-            return;
-        }
-        if (form.momType === 'newMom' && !form.month) {
-            showError('Please Select Month');
-            setFormSubmitted(false);
-            return;
-        }
-        let updateForm;
-        if (isEdit) {
-            const isFileChanged = form.file !== viewBadges.file;
-            updateForm = {
-                ...viewBadges,
-                ...form,
-                id,
-                fileChanged: isFileChanged,
-            };
-        }
-        const formData = objectToFormData(!isEdit ? form : updateForm)
-        managebadges(formData)
-    };
+const handleSubmit = (e) => {
+    e.preventDefault();
+
+    setFormSubmitted(true);
+    setButtonLoading(true);
+
+    if (!form.title || !form.titleTa || !form.file) {
+        setButtonLoading(false);
+        return;
+    }
+
+    if (form.momType === 'pregMom' && !form.week) {
+        showError('Please Select Week');
+        setFormSubmitted(false);
+        setButtonLoading(false);
+        return;
+    }
+
+    if (form.momType === 'newMom' && !form.month) {
+        showError('Please Select Month');
+        setFormSubmitted(false);
+        setButtonLoading(false);
+        return;
+    }
+
+    let updateForm;
+
+    if (isEdit) {
+        const isFileChanged = form.file !== viewBadges.file;
+
+        updateForm = {
+            ...viewBadges,
+            ...form,
+            id,
+            fileChanged: isFileChanged
+        };
+    } else {
+        updateForm = {
+            ...form
+        };
+    }
+
+    const formData = objectToFormData(updateForm);
+
+    // IMPORTANT:
+    // Force Tamil title into FormData
+    formData.set('titleTa', form.titleTa);
+
+    console.log("========== FRONTEND BATCH ==========");
+    console.log("English Title:", form.title);
+    console.log("Tamil Title:", form.titleTa);
+    console.log("FormData titleTa:", formData.get('titleTa'));
+
+    managebadges(formData);
+};
+
+
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     setFormSubmitted(true);
+    //     setButtonLoading(true);
+    //     if (!form.title || !form.titleTa || !form.file) {
+    //         // showError('Invalid Form');
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+    //     if (form.momType === 'pregMom' && !form.week) {
+    //         showError('Please Select Week');
+    //         setFormSubmitted(false);
+    //         return;
+    //     }
+    //     if (form.momType === 'newMom' && !form.month) {
+    //         showError('Please Select Month');
+    //         setFormSubmitted(false);
+    //         return;
+    //     }
+    //     let updateForm;
+    //     if (isEdit) {
+    //         const isFileChanged = form.file !== viewBadges.file;
+    //         updateForm = {
+    //             ...viewBadges,
+    //             ...form,
+    //             id,
+    //             fileChanged: isFileChanged,
+    //         };
+    //     }
+    //     const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     managebadges(formData)
+    // };
     const managebadges = async (formData) => {
         const action = !isEdit ? apiRoutes.addBadges : apiRoutes.updateBadges
         try {
@@ -219,6 +290,23 @@ export default function AddPodCasts() {
                                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                                 required={true}
                                 formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                            />
+                        </div>
+                        <div className="mt-2">
+                            <Input
+                                label="Tamil Title"
+                                name="titleTa"
+                                value={form.titleTa}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        titleTa: e.target.value
+                                    })
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
                                 disabled={!form.momType}
                             />
                         </div>

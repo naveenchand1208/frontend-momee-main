@@ -16,17 +16,31 @@ import ConfirmationDialog from '@/components/shared/confirmation-dialog/confirma
 import { objectToFormData } from "@/common/utils/util";
 import { Colors } from '@/common/constants/colorEnum';
 export default function AddMusicPlaylists() {
+    // const [form, setForm] = useState({
+    //     name: '',
+    //     file: '',
+    //     status: 'Active',
+    //     momType: '',
+    //     playlists: [],
+    // })
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         file: '',
         status: 'Active',
         momType: '',
         playlists: [],
-    })
+    });
+    // const [playLisForm, setPlayLisForm] = useState({
+    //     name: '',
+    //     file: '',
+    //     duration: '',
+    // })
     const [playLisForm, setPlayLisForm] = useState({
         name: '',
+        nameTa: '',
         file: '',
-        duration: '',
+        duration: ''
     })
     const { id } = useParams();
     const router = useRouter();
@@ -157,43 +171,150 @@ export default function AddMusicPlaylists() {
             setForm(prev => ({ ...prev, playlists: updatedPlaylists }));
         }
     };
+
     const handleEditPlaylist = async (playListId) => {
-        try {
-            const response = await apiRequest(
-                apiRoutes.viewPlaylist,
-                'POST',
-                {
-                    params: {
-                        id: musicId || id,
-                        playListId,
-                    },
+    try {
+
+        const response = await apiRequest(
+            apiRoutes.viewPlaylist,
+            'POST',
+            {
+                params: {
+                    id: musicId || id,
+                    playListId: playListId
                 }
-            );
-            console.log('response', response)
-            const playList = response?.data;
-            setViewPlayList(response.data)
-            setPlayLisForm({
-                name: playList.name,
-                duration: playList.duration,
-                file: playList.file,
-            })
-            setAudioPreviewUrl(playList.file);
-            setIsEditing(true);
-            setPlayListId(playList.playListId);
-        } catch (error) {
+            },
+            router
+        );
+
+        console.log(
+            'PLAYLIST VIEW RESPONSE:',
+            response
+        );
+
+        if (!response?.response) {
             showError('Failed to load playlist details.');
+            return;
         }
-    };
+
+        const playList = response.data;
+
+        console.log(
+            'English:',
+            playList?.name
+        );
+
+        console.log(
+            'Tamil:',
+            playList?.nameTa
+        );
+
+        console.log(
+            'Tamil Translation:',
+            playList?.translations?.ta?.name
+        );
+
+        setViewPlayList(playList);
+
+        setPlayListId(
+            playList?.playListId || playListId
+        );
+
+        setPlayLisForm({
+            name:
+                playList?.name || '',
+
+            nameTa:
+                playList?.nameTa ||
+                playList?.translations?.ta?.name ||
+                '',
+
+            duration:
+                playList?.duration || '',
+
+            file:
+                playList?.file || ''
+        });
+
+        setAudioPreviewUrl(
+            playList?.file || ''
+        );
+
+        setIsEditing(true);
+
+    } catch (error) {
+
+        console.error(
+            'Playlist edit error:',
+            error
+        );
+
+        showError(
+            'Failed to load playlist details.'
+        );
+    }
+};
+
+    // const handleEditPlaylist = async (playListId) => {
+    //     try {
+    //         const response = await apiRequest(
+    //             apiRoutes.viewPlaylist,
+    //             'POST',
+    //             {
+    //                 params: {
+    //                     id: musicId || id,
+    //                     playListId,
+    //                 },
+    //             }
+    //         );
+    //         console.log('response', response)
+    //         const playList = response?.data;
+    //         setViewPlayList(response.data)
+    //         // setPlayLisForm({
+    //         //     name: playList.name,
+    //         //     duration: playList.duration,
+    //         //     file: playList.file,
+    //         // })
+    //         setPlayLisForm({
+    //             name:playList?.name || '',
+    //             nameTa:playList?.translations?.ta?.name || '',
+    //             duration:
+    //                 playList?.duration || '',
+
+    //             file:
+    //                 playList?.file || ''
+
+    //         });
+    //         setAudioPreviewUrl(playList.file);
+    //         setIsEditing(true);
+    //         setPlayListId(playList.playListId);
+    //     } catch (error) {
+    //         showError('Failed to load playlist details.');
+    //     }
+    // };
+
     const viewMusic = async (musicId) => {
         try {
             const data = await apiRequest(apiRoutes.viewMusic, 'POST', { params: { id: musicId } }, router);
             if (data?.response) {
                 const ex = data.data;
+                // setForm({
+                //     name: ex?.name || '',
+                //     momType: ex?.momType || '',
+                //     // week: ex?.week || '',
+                //     // month: ex?.month || '',
+                //     file: ex?.file || '',
+                //     playlists: ex?.playLists || [],
+                //     status: ex?.status || '',
+                // });
                 setForm({
                     name: ex?.name || '',
+                    //nameTa:ex?.translations?.ta?.name || '',
+                    nameTa:
+                        ex?.nameTa ||
+                        ex?.translations?.ta?.name ||
+                        '',
                     momType: ex?.momType || '',
-                    // week: ex?.week || '',
-                    // month: ex?.month || '',
                     file: ex?.file || '',
                     playlists: ex?.playLists || [],
                     status: ex?.status || '',
@@ -207,41 +328,130 @@ export default function AddMusicPlaylists() {
             setIsLoading(false)
         }
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormSubmitted(true);
         setButtonLoading(true);
-        console.log('form', form)
-
-        if (!form.name || !form.file) {
-            // showError('Invalid Form');
+        console.log(
+            '========== MUSIC SUBMIT =========='
+        );
+        console.log('name:', form.name);
+        console.log('nameTa:', form.nameTa);
+        console.log('momType:', form.momType);
+        console.log('file:', form.file);
+        if (!form.name || !form.nameTa || !form.file) {
+            showError(
+                'Please enter English Name, Tamil Name and Thumbnail'
+            );
             setButtonLoading(false);
             return;
         }
-        // if (form.momType === 'pregMom' && !form.week) {
-        //     showError('Please Select Week');
-        //     setFormSubmitted(false);
-        //     return;
-        // }
-        // if (form.momType === 'newMom' && !form.month) {
-        //     showError('Please Select Month');
-        //     setFormSubmitted(false);
-        //     return;
-        // }
         let updateForm = {
             ...viewMusics,
             ...form,
         };
-
-        const isFileChanged = typeof form.file !== 'string';
-
+        const isFileChanged =
+            typeof form.file !== 'string';
         if (isFileChanged) {
             updateForm.fileChanged = true;
+
+        }
+        const formData =
+            objectToFormData(
+                !isEdit
+                    ? form
+                    : updateForm
+            );
+
+
+        // IMPORTANT
+        formData.set(
+            'name',
+            form.name
+        );
+
+        formData.set(
+            'nameTa',
+            form.nameTa
+        );
+
+        formData.set(
+            'momType',
+            form.momType
+        );
+
+        formData.set(
+            'status',
+            form.status
+        );
+
+
+        if (isEdit) {
+
+            formData.set(
+                'id',
+                id
+            );
+
         }
 
-        const formData = objectToFormData(!isEdit ? form : updateForm)
-        manageMusic(formData)
+
+        console.log(
+            '========== MUSIC FORM DATA =========='
+        );
+
+
+        for (
+            const [key, value]
+            of formData.entries()
+        ) {
+
+            console.log(
+                key,
+                value
+            );
+
+        }
+
+
+        manageMusic(formData);
     };
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setFormSubmitted(true);
+    //     setButtonLoading(true);
+    //     console.log('form', form)
+
+    //     if (!form.name || !form.file) {
+    //         // showError('Invalid Form');
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+    //     // if (form.momType === 'pregMom' && !form.week) {
+    //     //     showError('Please Select Week');
+    //     //     setFormSubmitted(false);
+    //     //     return;
+    //     // }
+    //     // if (form.momType === 'newMom' && !form.month) {
+    //     //     showError('Please Select Month');
+    //     //     setFormSubmitted(false);
+    //     //     return;
+    //     // }
+    //     let updateForm = {
+    //         ...viewMusics,
+    //         ...form,
+    //     };
+
+    //     const isFileChanged = typeof form.file !== 'string';
+
+    //     if (isFileChanged) {
+    //         updateForm.fileChanged = true;
+    //     }
+
+    //     const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     manageMusic(formData)
+    // };
     const manageMusic = async (formData) => {
         const action = !isEdit ? apiRoutes.addMusic : apiRoutes.updateMusic
         try {
@@ -287,34 +497,201 @@ export default function AddMusicPlaylists() {
     //     }
     // };
 
-    const handleExerciseSubmit = async (e) => {
-        e.preventDefault();
-        setPlaylistFormSubmitted(true);
-        setPlaylistButtonLoading(true);
-        const { name, file, duration } = playLisForm;
-        if (!name || !file || !duration) {
-            // showError('Invalid Form');
-            setPlaylistButtonLoading(false);
-            return;
-        }
-        let updateForm;
-        if (isEditing) {
-            const isMusicChanged = playLisForm.file !== viewPlayList.file;
-            updateForm = {
-                ...viewPlayList,
-                ...playLisForm,
-                musicId,
-                musicChanged: isMusicChanged,
-            };
-        } else {
-            updateForm = {
-                ...playLisForm,
-                musicId,
-            }
-        }
-        const formData = objectToFormData(updateForm)
-        managePlayList(formData)
-    };
+    
+    // const handleExerciseSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setPlaylistFormSubmitted(true);
+    //     setPlaylistButtonLoading(true);
+    //     const { name, file, duration } = playLisForm;
+    //     if (!name || !file || !duration) {
+    //         // showError('Invalid Form');
+    //         setPlaylistButtonLoading(false);
+    //         return;
+    //     }
+    //     let updateForm;
+    //     if (isEditing) {
+    //         const isMusicChanged = playLisForm.file !== viewPlayList.file;
+    //         updateForm = {
+    //             ...viewPlayList,
+    //             ...playLisForm,
+    //             musicId,
+    //             musicChanged: isMusicChanged,
+    //         };
+    //     } else {
+    //         updateForm = {
+    //             ...playLisForm,
+    //             musicId,
+    //         }
+    //     }
+    //     const formData = objectToFormData(updateForm)
+    //     managePlayList(formData)
+    // };
+
+   const handleExerciseSubmit = async (e) => {
+
+    e.preventDefault();
+
+    setPlaylistFormSubmitted(true);
+
+    setPlaylistButtonLoading(true);
+
+
+    const {
+        name,
+        nameTa,
+        file,
+        duration
+    } = playLisForm;
+
+
+    console.log('========== PLAYLIST SUBMIT ==========');
+    console.log('English:', name);
+    console.log('Tamil:', nameTa);
+    console.log('Duration:', duration);
+    console.log('File:', file);
+
+
+    if (!name) {
+
+        showError(
+            'Please enter English playlist name'
+        );
+
+        setPlaylistButtonLoading(false);
+
+        return;
+    }
+
+
+    if (!nameTa) {
+
+        showError(
+            'Please enter Tamil playlist name'
+        );
+
+        setPlaylistButtonLoading(false);
+
+        return;
+    }
+
+
+    if (!file) {
+
+        showError(
+            'Please select audio'
+        );
+
+        setPlaylistButtonLoading(false);
+
+        return;
+    }
+
+
+    if (!duration) {
+
+        showError(
+            'Please enter duration'
+        );
+
+        setPlaylistButtonLoading(false);
+
+        return;
+    }
+
+
+    let updateForm;
+
+
+    if (isEditing) {
+
+        updateForm = {
+
+            ...viewPlayList,
+
+            ...playLisForm,
+
+            musicId,
+
+            playListId,
+
+            fileChanged:
+                playLisForm.file instanceof File
+
+        };
+
+    } else {
+
+        updateForm = {
+
+            ...playLisForm,
+
+            musicId
+
+        };
+
+    }
+
+
+    const formData =
+        objectToFormData(updateForm);
+
+
+    // IMPORTANT
+    formData.set(
+        'musicId',
+        musicId
+    );
+
+
+    formData.set(
+        'name',
+        name
+    );
+
+
+    formData.set(
+        'nameTa',
+        nameTa
+    );
+
+
+    formData.set(
+        'duration',
+        duration
+    );
+
+
+    if (isEditing) {
+
+        formData.set(
+            'playListId',
+            playListId
+        );
+
+    }
+
+
+    console.log(
+        '========== FORM DATA =========='
+    );
+
+
+    for (
+        const [key, value]
+        of formData.entries()
+    ) {
+
+        console.log(
+            key,
+            value
+        );
+
+    }
+    managePlayList(formData);
+
+};
+
+
     const managePlayList = async (formData) => {
         const action = !isEditing ? apiRoutes.addPlaylist : apiRoutes.updatePlaylist;
         try {
@@ -323,8 +700,14 @@ export default function AddMusicPlaylists() {
                 viewMusic(musicId)
                 setPlaylistFormSubmitted(false);
                 setPlaylistButtonLoading(false);
+                // setPlayLisForm({
+                //     name: "",
+                //     duration: "",
+                //     file: "",
+                // })
                 setPlayLisForm({
                     name: "",
+                    nameTa: "",
                     duration: "",
                     file: "",
                 })
@@ -380,6 +763,23 @@ export default function AddMusicPlaylists() {
                                 disabled={!form.momType}
                                 formSubmitted={formSubmitted}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="mt-3">
+                            <Input
+                                name="nameTa"
+                                label="Name (Tamil)"
+                                value={form.nameTa}
+                                required={true}
+                                disabled={!form.momType}
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        nameTa: e.target.value
+                                    })
+                                }
                             />
                         </div>
                         <div className="mt-1">
@@ -440,52 +840,129 @@ export default function AddMusicPlaylists() {
                             <label htmlFor="Exercises" className="form-label mb-3" style={{ minWidth: '100px' }}>
                                 {isEditing ? "Edit Playlists " : "Add Playlists"}
                             </label>
-                            <div className="d-flex gap-4 mb-4" style={{ width: '100%' }}>
-                                <div style={{ width: '30%' }}>
-                                    <Input
-                                        name="name"
-                                        label="Name"
-                                        value={playLisForm.name}
-                                        formSubmitted={playlistFormSubmitted}
-                                        required={true}
-                                        disabled={!form.momType}
-                                        onChange={(e) => setPlayLisForm({ ...playLisForm, name: e.target.value })}
-                                    />
-                                </div>
-                                <div style={{ width: '40%' }}>
-                                    <FileUpload
-                                        label="Music(audio)"
-                                        format="audio"
-                                        parentFile={audioPreviewUrl}
-                                        required={true}
-                                        formSubmitted={playlistFormSubmitted}
-                                        disabled={!form.momType}
-                                        onFileSelect={(file) => {
-                                            if (file) {
-                                                const previewUrl = URL.createObjectURL(file);
-                                                setPlayLisForm((prev) => ({ ...prev, file }));
-                                                setAudioPreviewUrl(previewUrl);
-                                            } else {
-                                                setPlayLisForm((prev) => ({ ...prev, file: null }));
-                                                setAudioPreviewUrl(null);
-                                            }
-                                        }}
-                                    />
-                                </div>
-                                <div style={{ width: '30%' }}>
-                                    <Input
-                                        placeholder=""
-                                        name="Duration"
-                                        label="Duration In Minutes"
-                                        type="number"
-                                        value={playLisForm.duration}
-                                        required={true}
-                                        disabled={!form.momType}
-                                        formSubmitted={playlistFormSubmitted}
-                                        onChange={(e) => setPlayLisForm({ ...playLisForm, duration: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                            <div className="d-flex gap-4 mb-4 flex-wrap" style={{ width: '100%' }}>
+
+    {/* ================================
+        ENGLISH PLAYLIST NAME
+    ================================= */}
+
+    <div style={{ width: '30%' }}>
+
+        <Input
+            name="name"
+            label="Name"
+            value={playLisForm.name}
+            formSubmitted={playlistFormSubmitted}
+            required={true}
+            disabled={!form.momType}
+            onChange={(e) =>
+                setPlayLisForm({
+                    ...playLisForm,
+                    name: e.target.value
+                })
+            }
+        />
+
+    </div>
+
+
+    {/* ================================
+        TAMIL PLAYLIST NAME
+    ================================= */}
+
+    <div style={{ width: '30%' }}>
+
+        <Input
+            name="nameTa"
+            label="Name (Tamil)"
+            value={playLisForm.nameTa}
+            formSubmitted={playlistFormSubmitted}
+            required={true}
+            disabled={!form.momType}
+            tamilKeyboard={true}
+            onChange={(e) =>
+                setPlayLisForm({
+                    ...playLisForm,
+                    nameTa: e.target.value
+                })
+            }
+        />
+
+    </div>
+
+
+    {/* ================================
+        AUDIO
+    ================================= */}
+
+    <div style={{ width: '30%' }}>
+
+        <FileUpload
+            label="Music(audio)"
+            format="audio"
+            parentFile={audioPreviewUrl}
+            required={true}
+            formSubmitted={playlistFormSubmitted}
+            disabled={!form.momType}
+            onFileSelect={(file) => {
+
+                if (file) {
+
+                    const previewUrl =
+                        URL.createObjectURL(file);
+
+                    setPlayLisForm((prev) => ({
+                        ...prev,
+                        file: file
+                    }));
+
+                    setAudioPreviewUrl(
+                        previewUrl
+                    );
+
+                } else {
+
+                    setPlayLisForm((prev) => ({
+                        ...prev,
+                        file: null
+                    }));
+
+                    setAudioPreviewUrl(null);
+
+                }
+
+            }}
+        />
+
+    </div>
+
+
+    {/* ================================
+        DURATION
+    ================================= */}
+
+    <div style={{ width: '30%' }}>
+
+        <Input
+            placeholder=""
+            name="duration"
+            label="Duration In Minutes"
+            type="number"
+            value={playLisForm.duration}
+            required={true}
+            disabled={!form.momType}
+            formSubmitted={playlistFormSubmitted}
+            onChange={(e) =>
+                setPlayLisForm({
+                    ...playLisForm,
+                    duration: e.target.value
+                })
+            }
+        />
+
+    </div>
+
+</div>
                         </div>
                         <div className="d-flex justify-content-end align-items-center me-2" style={{ marginTop: '-10px' }}>
                             <Button

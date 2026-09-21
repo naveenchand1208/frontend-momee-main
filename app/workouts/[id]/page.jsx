@@ -15,8 +15,14 @@ import { objectToFormData } from "@/common/utils/util";
 import { Colors } from '@/common/constants/colorEnum';
 import RadioGroup from '@/components/shared/radio/page';
 export default function AddWorkouts() {
+    // const initialFormState = {
+    //     name: '',
+    //     file: '',
+    //     status: 'Active',
+    // }
     const initialFormState = {
         name: '',
+        nameTa: '',
         file: '',
         status: 'Active',
     }
@@ -86,8 +92,14 @@ export default function AddWorkouts() {
             const data = await apiRequest(apiRoutes.viewMasterExercise, 'POST', { params: { id: collectionId } }, router);
             if (data?.response) {
                 const work = data.data;
+                // setForm({
+                //     name: work?.name || '',
+                //     file: work?.file || '',
+                //     status: work?.status || '',
+                // });
                 setForm({
                     name: work?.name || '',
+                    nameTa: work?.translations?.ta?.name || '',
                     file: work?.file || '',
                     status: work?.status || '',
                 });
@@ -100,29 +112,197 @@ export default function AddWorkouts() {
             console.log('error', error);
         }
     };
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setFormSubmitted(true);
-        setButtonLoading(true);
-        console.log('form', form)
-        if (!form.name || !form.file) {
-            // showError('Invalid Form');
-            setButtonLoading(false);
-            return;
-        }
-        let updateForm;
-        if (isEdit) {
-            const isFileChanged = form.file !== viewCollections.file;
-            updateForm = {
-                ...viewCollections,
-                ...form,
-                fileChanged: isFileChanged,
-            };
-        }
-        const formData = objectToFormData(!isEdit ? form : updateForm)
-        console.log('updateForm', updateForm);
-        manageCollection(formData)
-    };
+
+    e.preventDefault();
+
+    setFormSubmitted(true);
+
+    setButtonLoading(true);
+
+
+    console.log(
+        'WORKOUT FORM:',
+        form
+    );
+
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
+    if (!form.name) {
+
+        showError(
+            'Please enter English Name'
+        );
+
+        setButtonLoading(false);
+
+        return;
+    }
+
+
+    if (!form.nameTa) {
+
+        showError(
+            'Please enter Tamil Name'
+        );
+
+        setButtonLoading(false);
+
+        return;
+    }
+
+
+    if (!form.file) {
+
+        showError(
+            'Please select Thumbnail'
+        );
+
+        setButtonLoading(false);
+
+        return;
+    }
+
+
+    let updateForm;
+
+
+    // ==========================================
+    // UPDATE
+    // ==========================================
+
+    if (isEdit) {
+
+        const isFileChanged =
+            form.file !== viewCollections.file;
+
+
+        updateForm = {
+
+            ...viewCollections,
+
+            ...form,
+
+            fileChanged:
+                isFileChanged
+
+        };
+
+    }
+
+    // ==========================================
+    // ADD
+    // ==========================================
+
+    else {
+
+        updateForm = {
+            ...form
+        };
+
+    }
+
+
+    const formData = objectToFormData(
+        !isEdit
+            ? form
+            : updateForm
+    );
+
+    formData.set(
+        'name',
+        form.name
+    );
+
+    formData.set(
+        'nameTa',
+        form.nameTa
+    );
+    formData.set(
+        'status',
+        form.status
+    );
+    if (isEdit) {
+        formData.set(
+            'id',
+            id
+        );
+    }
+    for (
+        const [key, value]
+        of formData.entries()
+    ){
+        console.log(
+            key,
+            value
+        );
+
+    }
+
+
+    manageCollection(formData);
+};
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
+    //     setFormSubmitted(true);
+    //     setButtonLoading(true);
+    //     console.log('form', form)
+    //     if (!form.name || !form.nameTa || !form.file) {
+    //         // showError('Invalid Form');
+    //         setButtonLoading(false);
+    //         return;
+    //     }
+    //     let updateForm;
+    //     if (isEdit) {
+    //         const isFileChanged = form.file !== viewCollections.file;
+    //         updateForm = {
+    //             ...viewCollections,
+    //             ...form,
+    //             fileChanged: isFileChanged,
+    //         };
+    //     }
+    //     // const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     // console.log('updateForm', updateForm);
+    //     // manageCollection(formData)
+    //     const formData = objectToFormData(
+    //         !isEdit ? form : updateForm
+    //     );
+
+    //     formData.set(
+    //         'name',
+    //         form.name
+    //     );
+
+    //     formData.set(
+    //         'nameTa',
+    //         form.nameTa
+    //     );
+
+    //     formData.set(
+    //         'status',
+    //         form.status
+    //     );
+
+    //     console.log(
+    //         '========== WORKOUT FORM DATA =========='
+    //     );
+
+    //     for (
+    //         const [key, value]
+    //         of formData.entries()
+    //     ) {
+    //         console.log(key, value);
+    //     }
+
+
+    //     manageCollection(formData);
+    // };
+
     const manageCollection = async (formData) => {
         const action = !isEdit ? apiRoutes.addMasterExercise : apiRoutes.updateMasterExercise
         try {
@@ -176,6 +356,23 @@ export default function AddWorkouts() {
                                 required={true}
                                 formSubmitted={formSubmitted}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="mt-3">
+                            <Input
+                                placeholder=""
+                                name="nameTa"
+                                label="Name (Tamil)"
+                                value={form.nameTa}
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        nameTa: e.target.value
+                                    })
+                                }
                             />
                         </div>
                         <div className="mt-1">

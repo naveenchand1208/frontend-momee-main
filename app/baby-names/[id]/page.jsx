@@ -29,6 +29,7 @@ export default function Baby_Names_Add() {
     // Default form
     const [form, setForm] = useState({
         name: '',
+        nameTa: '',
         type: 'boy',
     });
 
@@ -59,6 +60,7 @@ export default function Baby_Names_Add() {
     const handleClear = () => {
         setForm({
             name: '',
+            nameTa: '',
             type: 'boy',
         });
         setFormSubmitted(false);
@@ -88,42 +90,147 @@ export default function Baby_Names_Add() {
     };
 
     // View API data
-    const viewTemplates = async (id) => {
-        try {
-            const payload = { params: { id } };
-            const data = await apiRequest(apiRoutes.viewBabyNames, 'POST', payload, router);
+    // const viewTemplates = async (id) => {
+    //     try {
+    //         const payload = { params: { id } };
+    //         const data = await apiRequest(apiRoutes.viewBabyNames, 'POST', payload, router);
 
-            if (data?.response) {
-                const template = data?.data;
+    //         if (data?.response) {
+    //             const template = data?.data;
 
-                // Clean API type safely
-                const cleanType = template?.type
-                    ? template?.type?.toString().trim().toLowerCase()
-                    : 'boy';
+    //             // Clean API type safely
+    //             const cleanType = template?.type
+    //                 ? template?.type?.toString().trim().toLowerCase()
+    //                 : 'boy';
 
-                // Ensure ONLY boy/girl allowed
-                const finalType = ['boy', 'girl'].includes(cleanType) ? cleanType : 'boy';
+    //             // Ensure ONLY boy/girl allowed
+    //             const finalType = ['boy', 'girl'].includes(cleanType) ? cleanType : 'boy';
 
-                setForm({
-                    name: template?.name || '',
-                    type: finalType,
-                });
+    //             setForm({
+    //                 name: template?.name || '',
+    //                 nameTa: template?.translations?.ta?.name || template?.nameTa || '',
+    //                 type: finalType,
+    //             });
 
-                setViewform(template);
-                setIsLoading(false);
+    //             setViewform(template);
+    //             setIsLoading(false);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error loading template', error);
+    //     }
+    // };
+    const viewTemplates = async () => {
+    try {
+        const payload = {
+            params: {
+                id
             }
-        } catch (error) {
-            console.error('Error loading template', error);
+        };
+
+        const data = await apiRequest(
+            apiRoutes.viewBabyNames,
+            'POST',
+            payload,
+            router
+        );
+
+        if (data?.response) {
+            const template = data?.data;
+            console.log("========== BABY NAME DEBUG ==========");
+            console.log("FULL RESPONSE:", data);
+            console.log("TEMPLATE:", template);
+            console.log("ENGLISH NAME:", template?.name);
+            console.log("NAME TA:", template?.nameTa);
+            console.log("TRANSLATIONS:", template?.translations);
+            console.log("TA NAME:", template?.translations?.ta?.name);
+            console.log("====================================");
+
+            console.log('BABY NAME API RESPONSE:', template);
+            console.log('TAMIL NAME:', template?.translations?.ta?.name);
+            console.log('NAME TA:', template?.nameTa);
+
+            const cleanType = String(template?.type || '')
+                .trim()
+                .toLowerCase();
+
+            const finalType =
+                cleanType === 'girl' ? 'girl' : 'boy';
+
+            // setForm({
+            //     name: template?.translations?.en?.name ||
+            //           template?.name ||
+            //           '',
+
+            //     nameTa: template?.translations?.ta?.name ||
+            //             template?.nameTa ||
+            //             '',
+
+            //     type: finalType
+            // });
+            setForm({
+                name: template?.name || '',
+
+                nameTa:
+                    template?.nameTa ||
+                    template?.translations?.ta?.name ||
+                    '',
+
+                type: finalType
+            });
+
+            setViewform(template);
+            setIsLoading(false);
         }
-    };
+
+    } catch (error) {
+        console.error('View Baby Name Error:', error);
+        setIsLoading(false);
+    }
+};
 
     // Submit logic
+//     const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     setFormSubmitted(true);
+//     setButtonLoading(true);
+
+//     if (!form.name || !form.nameTa || !form.type) {
+//         setButtonLoading(false);
+//         return;
+//     }
+
+//     let payloadData = {
+//         ...form,
+//         nameTa: form.nameTa,
+//     };
+
+//     if (isEdit) {
+//         payloadData = {
+//             ...viewform,
+//             ...form,
+//             nameTa: form.nameTa,
+//         };
+//     }
+
+//     console.log("========== BABY NAME SAVE ==========");
+//     console.log("English Name:", payloadData.name);
+//     console.log("Tamil Name:", payloadData.nameTa);
+//     console.log("Type:", payloadData.type);
+//     console.log("FINAL PAYLOAD:", payloadData);
+
+//     const payload = {
+//         params: payloadData
+//     };
+
+//     manageTemplate(payload);
+// };
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormSubmitted(true);
         setButtonLoading(true);
 
-        if (!form.name || !form.type) {
+        if (!form.name || !form.nameTa || !form.type) {
             setButtonLoading(false);
             return;
         }
@@ -136,6 +243,14 @@ export default function Baby_Names_Add() {
                 ...form
             };
         }
+        payloadData.translations = {
+            en: {
+                name: payloadData.name
+            },
+            ta: {
+                name: payloadData.nameTa
+            }
+        };
 
         // Payload wrapper
         const payload = {
@@ -146,26 +261,68 @@ export default function Baby_Names_Add() {
     };
 
     // Add / Update API call
+    // const manageTemplate = async (payload) => {
+    //     const action = isEdit ? apiRoutes.updateBabyNames : apiRoutes.addBabyNames;
+
+    //     try {
+    //         const data = await apiRequest(action, 'POST', payload, router);
+
+    //         if (data?.response) {
+    //             showSuccess(isEdit ? 'Baby Names updated successfully!' : 'Baby Names added successfully!');
+    //             handleClear();
+    //             router.push('/baby-names');
+    //         } else {
+    //             setButtonLoading(false);
+    //             setFormSubmitted(false);
+    //         }
+
+    //     } catch (error) {
+    //         console.error('Failed to save baby names:', error);
+    //         setButtonLoading(false);
+    //     }
+    // };
     const manageTemplate = async (payload) => {
-        const action = isEdit ? apiRoutes.updateBabyNames : apiRoutes.addBabyNames;
+    const action = isEdit
+        ? apiRoutes.updateBabyNames
+        : apiRoutes.addBabyNames;
 
-        try {
-            const data = await apiRequest(action, 'POST', payload, router);
+    try {
+        const data = await apiRequest(
+            action,
+            'POST',
+            payload,
+            router
+        );
 
-            if (data?.response) {
-                showSuccess(isEdit ? 'Baby Names updated successfully!' : 'Baby Names added successfully!');
-                handleClear();
-                router.push('/baby-names');
-            } else {
-                setButtonLoading(false);
-                setFormSubmitted(false);
-            }
+        if (data?.response) {
 
-        } catch (error) {
-            console.error('Failed to save baby names:', error);
+            showSuccess(
+                isEdit
+                    ? 'Baby Name updated successfully!'
+                    : 'Baby Name added successfully!'
+            );
+
+            handleClear();
+
+            router.push('/baby-names');
+
+        } else {
+
             setButtonLoading(false);
+            setFormSubmitted(false);
         }
-    };
+
+    } catch (error) {
+
+        console.error(
+            'Failed to save baby names:',
+            error
+        );
+
+        setButtonLoading(false);
+        setFormSubmitted(false);
+    }
+};
 
     return (
         <div className="max-w-4xl mx-auto mt-10">
@@ -205,6 +362,22 @@ export default function Baby_Names_Add() {
                                     const value = e.target.value.replace(/[^A-Za-z\s]/g, "");
                                     setForm({ ...form, name: value });
                                 }} />
+                        </div>
+                        <div className="col-md-12 mb-3 mt-2">
+                            <Input
+                                label="Tamil Name"
+                                name="nameTa"
+                                value={form.nameTa}
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) => {
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        nameTa: e.target.value
+                                    }));
+                                }}
+                            />
                         </div>
 
                     </div>
