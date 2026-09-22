@@ -114,7 +114,6 @@ export default function AddProductListings() {
         } catch (error) {
             console.error('Error fetching categories:', error);
         }
-
     };
 
     const viewProducts = async (id) => {
