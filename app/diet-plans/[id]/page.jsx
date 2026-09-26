@@ -116,15 +116,21 @@ export default function Diet_Plans_Add() {
 
     const viewDietPlan = async (id) => {
         try {
-            const payload = { params: { id } };
+            //const payload = { params: { id }, admin: true };
+            const payload = { params: { 
+                id,
+                admin: true
+            }
+        };
             const data = await apiRequest(apiRoutes.viewDietSubscription, 'POST', payload, router);
             if (data?.response) {
                 const plan = data?.data;
                 console.log('plan', plan)
                 setForm({
                     planName: plan?.planName || '',
-                    planNameTa: plan?.translations?.ta?.name ||
-                            plan?.planNameTa || '',
+                    // planNameTa: plan?.translations?.ta?.name ||
+                    //         plan?.planNameTa || '',
+                    planNameTa: plan?.planNameTa || '',
                     planAmount: plan?.planAmount || '',
                     durationMonths: plan?.durationMonths || '',
                     deviceType: (plan?.deviceType || '').toLowerCase(),
@@ -181,7 +187,7 @@ export default function Diet_Plans_Add() {
                         ta: {
                             name: updateForm.planNameTa
                         }
-                    }
+                }
             }
         };
         manageDietPlan(payload);

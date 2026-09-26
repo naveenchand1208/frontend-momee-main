@@ -171,43 +171,128 @@ export default function AddMusicPlaylists() {
             setForm(prev => ({ ...prev, playlists: updatedPlaylists }));
         }
     };
+
     const handleEditPlaylist = async (playListId) => {
-        try {
-            const response = await apiRequest(
-                apiRoutes.viewPlaylist,
-                'POST',
-                {
-                    params: {
-                        id: musicId || id,
-                        playListId,
-                    },
+    try {
+
+        const response = await apiRequest(
+            apiRoutes.viewPlaylist,
+            'POST',
+            {
+                params: {
+                    id: musicId || id,
+                    playListId: playListId
                 }
-            );
-            console.log('response', response)
-            const playList = response?.data;
-            setViewPlayList(response.data)
-            // setPlayLisForm({
-            //     name: playList.name,
-            //     duration: playList.duration,
-            //     file: playList.file,
-            // })
-            setPlayLisForm({
-                name:playList?.name || '',
-                nameTa:playList?.translations?.ta?.name || '',
-                duration:
-                    playList?.duration || '',
+            },
+            router
+        );
 
-                file:
-                    playList?.file || ''
+        console.log(
+            'PLAYLIST VIEW RESPONSE:',
+            response
+        );
 
-            });
-            setAudioPreviewUrl(playList.file);
-            setIsEditing(true);
-            setPlayListId(playList.playListId);
-        } catch (error) {
+        if (!response?.response) {
             showError('Failed to load playlist details.');
+            return;
         }
-    };
+
+        const playList = response.data;
+
+        console.log(
+            'English:',
+            playList?.name
+        );
+
+        console.log(
+            'Tamil:',
+            playList?.nameTa
+        );
+
+        console.log(
+            'Tamil Translation:',
+            playList?.translations?.ta?.name
+        );
+
+        setViewPlayList(playList);
+
+        setPlayListId(
+            playList?.playListId || playListId
+        );
+
+        setPlayLisForm({
+            name:
+                playList?.name || '',
+
+            nameTa:
+                playList?.nameTa ||
+                playList?.translations?.ta?.name ||
+                '',
+
+            duration:
+                playList?.duration || '',
+
+            file:
+                playList?.file || ''
+        });
+
+        setAudioPreviewUrl(
+            playList?.file || ''
+        );
+
+        setIsEditing(true);
+
+    } catch (error) {
+
+        console.error(
+            'Playlist edit error:',
+            error
+        );
+
+        showError(
+            'Failed to load playlist details.'
+        );
+    }
+};
+
+    // const handleEditPlaylist = async (playListId) => {
+    //     try {
+    //         const response = await apiRequest(
+    //             apiRoutes.viewPlaylist,
+    //             'POST',
+    //             {
+    //                 params: {
+    //                     id: musicId || id,
+    //                     playListId,
+    //                 },
+    //             }
+    //         );
+    //         console.log('response', response)
+    //         const playList = response?.data;
+    //         setViewPlayList(response.data)
+    //         // setPlayLisForm({
+    //         //     name: playList.name,
+    //         //     duration: playList.duration,
+    //         //     file: playList.file,
+    //         // })
+    //         setPlayLisForm({
+    //             name:playList?.name || '',
+    //             nameTa:playList?.translations?.ta?.name || '',
+    //             duration:
+    //                 playList?.duration || '',
+
+    //             file:
+    //                 playList?.file || ''
+
+    //         });
+    //         setAudioPreviewUrl(playList.file);
+    //         setIsEditing(true);
+    //         setPlayListId(playList.playListId);
+    //     } catch (error) {
+    //         showError('Failed to load playlist details.');
+    //     }
+    // };
+
     const viewMusic = async (musicId) => {
         try {
             const data = await apiRequest(apiRoutes.viewMusic, 'POST', { params: { id: musicId } }, router);
@@ -224,7 +309,11 @@ export default function AddMusicPlaylists() {
                 // });
                 setForm({
                     name: ex?.name || '',
-                    nameTa:ex?.translations?.ta?.name || '',
+                    //nameTa:ex?.translations?.ta?.name || '',
+                    nameTa:
+                        ex?.nameTa ||
+                        ex?.translations?.ta?.name ||
+                        '',
                     momType: ex?.momType || '',
                     file: ex?.file || '',
                     playlists: ex?.playLists || [],
@@ -408,7 +497,7 @@ export default function AddMusicPlaylists() {
     //     }
     // };
 
-
+    
     // const handleExerciseSubmit = async (e) => {
     //     e.preventDefault();
     //     setPlaylistFormSubmitted(true);

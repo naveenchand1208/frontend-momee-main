@@ -7,6 +7,7 @@ const apiRoutes = {
   updateUSer: `${BASE_URL}/auth/updateUserProfile`,
   logout: `${BASE_URL}/auth/logout`,
   viewPregMom: `${BASE_URL}/auth/getUserProfile`,
+  totalUsersCount: `${BASE_URL}/auth/totalUsersCount`,
   userReport: `${BASE_URL}/auth/userReport`,
   userExport: `${BASE_URL}/auth/userDownloadExcel`,
   moodTrackerReport: `${BASE_URL}/tracker/list`,

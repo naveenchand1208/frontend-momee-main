@@ -171,39 +171,143 @@ export default function AddArticle() {
         setBackLoading(true);
         router.push('/articles');
     }
-    const viewArticles = async (id) => {
-        try {
-            const payload = { params: { id } }
-            console.log('Id', id);
-            const data = await apiRequest(apiRoutes.viewArticles, 'POST', payload, router);
-            if (data?.response) {
-                const article = data?.data;
-                setForm({
-                    title: article?.title || '',
-                    titleTa: article?.translations?.ta?.title || '',
-                    status: article?.status || '',
-                    file: article?.file || '',
-                    // banner: article?.banner || '',
-                    description: article?.description || '',
-                    descriptionTa: article?.translations?.ta?.description || '',
-                    duration: article?.duration || '',
-                    categoryId: article?.categoryId || '',
-                    category: categories.find(cat => cat.id === article.categoryId)?.title || '',
-                    momType: article.momType,
-                    week: article.week,
-                    month: article.month,
-                });
-               // setContent(article.description)
-               setContent(article.description || '')
-                setViewArticle(article)
-                setPreviewUrl(article.file)
-                // setBannerUrl(article.banner)
-                setIsLoading(false)
+
+const viewArticles = async (id) => {
+    try {
+        const payload = {
+            params: {
+                id,
+                admin: true
             }
-        } catch (error) {
-            console.log('error', error)
+        };
+
+        console.log('VIEW ARTICLE REQUEST:', payload);
+
+        const data = await apiRequest(
+            apiRoutes.viewArticles,
+            'POST',
+            payload,
+            router
+        );
+
+        console.log('VIEW ARTICLE RESPONSE:', data);
+
+        if (data?.response) {
+            const article = data?.data;
+
+            console.log('ARTICLE:', article);
+
+            console.log(
+                'ENGLISH TITLE:',
+                article?.title
+            );
+
+            console.log(
+                'TAMIL TITLE:',
+                article?.translations?.ta?.title
+            );
+
+            console.log(
+                'ENGLISH DESCRIPTION:',
+                article?.description
+            );
+
+            console.log(
+                'TAMIL DESCRIPTION:',
+                article?.translations?.ta?.description
+            );
+
+            setForm({
+                title: article?.title || '',
+
+                titleTa:
+                    article?.translations?.ta?.title || '',
+
+                status: article?.status || '',
+
+                file: article?.file || '',
+
+                description:
+                    article?.description || '',
+
+                descriptionTa:
+                    article?.translations?.ta?.description || '',
+
+                duration: article?.duration || '',
+
+                categoryId:
+                    article?.categoryId || '',
+
+                category:
+                    categories.find(
+                        cat => cat.id === article?.categoryId
+                    )?.title || '',
+
+                momType: article?.momType || '',
+
+                week: article?.week || '',
+
+                month: article?.month || ''
+            });
+
+            setContent(article?.description || '');
+
+            setViewArticle(article);
+
+            setPreviewUrl(article?.file || '');
+
+            setIsLoading(false);
         }
+
+    } catch (error) {
+        console.log('VIEW ARTICLE ERROR:', error);
+        setIsLoading(false);
     }
+};
+
+
+
+
+    // const viewArticles = async (id) => {
+    //     try {
+    //        // const payload = { params: { id } }
+    //        const payload = {
+    //             params: {
+    //                 id,
+    //                 admin: true
+    //             }
+    //         };
+    //         console.log('Id', id);
+    //         const data = await apiRequest(apiRoutes.viewArticles, 'POST', payload, router);
+    //         if (data?.response) {
+    //             const article = data?.data;
+    //             setForm({
+    //                 title: article?.title || '',
+    //                 titleTa: article?.translations?.ta?.title || '',
+    //                 status: article?.status || '',
+    //                 file: article?.file || '',
+    //                 // banner: article?.banner || '',
+    //                 description: article?.description || '',
+    //                 descriptionTa: article?.translations?.ta?.description || '',
+    //                 duration: article?.duration || '',
+    //                 categoryId: article?.categoryId || '',
+    //                 category: categories.find(cat => cat.id === article.categoryId)?.title || '',
+    //                 momType: article.momType,
+    //                 week: article.week,
+    //                 month: article.month,
+    //             });
+    //            // setContent(article.description)
+    //             setContent(article.description || '')
+    //             setViewArticle(article)
+    //             setPreviewUrl(article.file)
+    //             // setBannerUrl(article.banner)
+    //             setIsLoading(false)
+    //         }
+    //     } catch (error) {
+    //         console.log('error', error)
+    //     }
+    // }
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setFormSubmitted(true);
@@ -262,7 +366,6 @@ export default function AddArticle() {
                     }
                 }
         };
-
         const formData = objectToFormData(preparedForm);
         manageArticles(formData)
     };

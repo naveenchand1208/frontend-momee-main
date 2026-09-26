@@ -26,12 +26,12 @@ export default function AddArticle() {
         file: '',
         momType: '',
         category: '',
-        categoryTa: '',
+        //categoryTa: '',
         categoryId: '',
         month: '',
         week: '',
         foodType: '',
-        foodTypeTa: '',
+        //foodTypeTa: '',
         foodTypeId: '',
         region: '',
         symptoms: [],
@@ -186,17 +186,17 @@ export default function AddArticle() {
                         cat => cat.id === food.categoryId
                     )?.title || '',
 
-                    categoryTa:
-                        food?.translations?.ta?.category ||
-                        categories.find(cat => cat.id === food.categoryId)?.labelTa ||
-                        '',
+                    // categoryTa:
+                    //     food?.translations?.ta?.category ||
+                    //     categories.find(cat => cat.id === food.categoryId)?.labelTa ||
+                    //     '',
 
                     foodType: food?.foodType || '',
 
-                    foodTypeTa:
-                        food?.translations?.ta?.foodType ||
-                        foodTypes.find(fd => fd.id === food.foodTypeId)?.labelTa ||
-                        '',
+                    // foodTypeTa:
+                    //     food?.translations?.ta?.foodType ||
+                    //     foodTypes.find(fd => fd.id === food.foodTypeId)?.labelTa ||
+                    //     '',
 
                     foodTypeId: foodTypes.find(
                         fd => fd.id === food.foodTypeId
@@ -309,7 +309,7 @@ export default function AddArticle() {
     setForm((prev) => ({
         ...prev,
         category: item.title,
-        categoryTa: item?.translations?.ta?.title || item?.labelTa || '',
+       // categoryTa: item?.translations?.ta?.title || item?.labelTa || '',
         categoryId: item.id,
     }));
 };
@@ -317,7 +317,7 @@ export default function AddArticle() {
         setForm((prev) => ({
             ...prev,
             foodType: item.label,
-            foodTypeTa: item.labelTa,
+            //foodTypeTa: item.labelTa,
             foodTypeId: item.id,
         }));
     };
@@ -457,24 +457,20 @@ export default function AddArticle() {
         const formData = objectToFormData(
                 !isEdit ? form : updateForm
             );
-
             formData.set('titleTa', form.titleTa);
-
             formData.set(
                 'descriptionTa',
                 form.descriptionTa
             );
+            // formData.set(
+            //     'categoryTa',
+            //     form.categoryTa
+            // );
 
-            formData.set(
-                'categoryTa',
-                form.categoryTa
-            );
-
-            formData.set(
-                'foodTypeTa',
-                form.foodTypeTa
-            );
-
+            // formData.set(
+            //     'foodTypeTa',
+            //     form.foodTypeTa
+            // );
             formData.set(
                 'symptoms',
                 JSON.stringify(form.symptoms)
@@ -486,10 +482,7 @@ export default function AddArticle() {
                 console.log(key, value);
             }
 
-            console.log('====================================');
-
-            manageFoods(formData);
-        manageFoods(formData)
+            manageFoods(formData)
     };
     const manageFoods = async (formData) => {
         const action = !isEdit ? apiRoutes.addFoodsAvoid : apiRoutes.updateFoodsAvoid
@@ -633,7 +626,7 @@ export default function AddArticle() {
                                 onSelect={handleCategorySelect}
                             />
                         </div>
-                        <div className="mt-2">
+                        {/* <div className="mt-2">
                             <Input
                                 label="Tamil Category"
                                 name="categoryTa"
@@ -649,7 +642,7 @@ export default function AddArticle() {
                                 disabled={!form.momType}
                                 tamilKeyboard={true}
                             />
-                        </div>
+                        </div> */}
                         <div className="mt-2">
                             <AutoCompleteInput
                                 label="Food Type"
@@ -661,7 +654,7 @@ export default function AddArticle() {
                                 onSelect={handleFoodTypeSelect}
                             />
                         </div>
-                        <div className="mt-2">
+                        {/* <div className="mt-2">
                             <Input
                                 label="Tamil Food Type"
                                 name="foodTypeTa"
@@ -677,7 +670,7 @@ export default function AddArticle() {
                                 disabled={!form.momType}
                                 tamilKeyboard={true}
                             />
-                        </div>
+                        </div> */}
                         {form.momType === 'newMom' ? (
                             <div className="mt-2" >
                                 <AutoCompleteInput

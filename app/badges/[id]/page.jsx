@@ -81,15 +81,27 @@ export default function AddPodCasts() {
             const data = await apiRequest(apiRoutes.viewBadges, 'POST', payload, router);
             if (data?.response) {
                 const badge = data?.data;
+                // setForm({
+                //     title: badge?.title || '',
+                //     titleTa: badge?.translations?.ta?.title || '',
+                //     status: badge?.status || '',
+                //     file: badge?.file || '',
+                //     momType: badge.momType,
+                //     week: badge.week,
+                //     month: badge.month,
+                // });
                 setForm({
-                    title: badge?.title || '',
-                    titleTa: badge?.translations?.ta?.title || '',
-                    status: badge?.status || '',
-                    file: badge?.file || '',
-                    momType: badge.momType,
-                    week: badge.week,
-                    month: badge.month,
-                });
+                title: badge?.title || '',
+                titleTa:
+                    badge?.titleTa ||
+                    badge?.translations?.ta?.title ||
+                    '',
+                status: badge?.status || '',
+                file: badge?.file || '',
+                momType: badge?.momType || '',
+                week: badge?.week || '',
+                month: badge?.month || '',
+            });
                 setViewBadges(badge)
                 setPreviewUrl(badge.file)
                 setIsLoading(false)

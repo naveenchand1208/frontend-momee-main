@@ -114,7 +114,6 @@ export default function AddProductListings() {
         } catch (error) {
             console.error('Error fetching categories:', error);
         }
-
     };
 
     const viewProducts = async (id) => {
@@ -140,8 +139,12 @@ export default function AddProductListings() {
                 // });
                 setForm({
                     name:product?.name || '',
+                    // nameTa:
+                    //     product?.translations?.ta?.name || '',
                     nameTa:
-                        product?.translations?.ta?.name || '',
+                        product?.nameTa ||
+                        product?.translations?.ta?.name ||
+                        '',
 
                     files:
                         formattedFiles,
@@ -149,8 +152,13 @@ export default function AddProductListings() {
                     description:
                         product?.description || '',
 
+                    // descriptionTa:
+                    //     product?.translations?.ta?.description || '',
+
                     descriptionTa:
-                        product?.translations?.ta?.description || '',
+                        product?.descriptionTa ||
+                        product?.translations?.ta?.description ||
+                        '',
 
                     actualPrice:
                         product?.actualPrice || '',

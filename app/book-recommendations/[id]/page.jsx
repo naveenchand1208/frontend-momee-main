@@ -121,16 +121,30 @@ export default function Book_Recommendations() {
             if (data?.response) {
                 const book = data?.data;
 
+                // setForm({
+                //     title: book?.title || '',
+                //     titleTa: book?.translations?.ta?.title || '',
+                //     status: book?.status || '',
+                //     momType: book?.momType || '',
+                //     file: book?.file || '',
+                //     book: book?.book || '',
+                //     link: book?.link || '',
+                //     pregMom: book.momType === 'pregMom' || book.momType === '',
+                //     newMom: book.momType === 'newMom' || book.momType === ''
+                // });
                 setForm({
                     title: book?.title || '',
-                    titleTa: book?.translations?.ta?.title || '',
+                    titleTa:
+                        book?.titleTa ||
+                        book?.translations?.ta?.title ||
+                        '',
                     status: book?.status || '',
                     momType: book?.momType || '',
                     file: book?.file || '',
                     book: book?.book || '',
                     link: book?.link || '',
-                    pregMom: book.momType === 'pregMom' || book.momType === '',
-                    newMom: book.momType === 'newMom' || book.momType === ''
+                    pregMom: book?.momType === 'pregMom' || book?.momType === '',
+                    newMom: book?.momType === 'newMom' || book?.momType === ''
                 });
 
                 setViewBook(book);

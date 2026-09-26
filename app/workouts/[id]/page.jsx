@@ -222,36 +222,20 @@ export default function AddWorkouts() {
         'nameTa',
         form.nameTa
     );
-
     formData.set(
         'status',
         form.status
     );
-
-
     if (isEdit) {
-
         formData.set(
             'id',
             id
         );
-
     }
-
-
-    // ==========================================
-    // CHECK WHAT IS SENT
-    // ==========================================
-
-    console.log(
-        '========== WORKOUT FORM DATA =========='
-    );
-
     for (
         const [key, value]
         of formData.entries()
-    ) {
-
+    ){
         console.log(
             key,
             value

@@ -104,27 +104,82 @@ export default function Exercise_Plan_Add() {
     //     setFormSubmitted(false);
     // };
 
+    // const viewExercisePlan = async (id) => {
+    //     try {
+    //        // const payload = { params: { id } };
+    //        const payload = {
+    //                 params: {
+    //                     id,
+    //                     admin: true
+    //                 }
+    //             };
+    //         const data = await apiRequest(apiRoutes.viewExerciseSubscription, 'POST', payload, router);
+    //         if (data?.response) {
+    //             const plan = data?.data;
+    //             setForm({
+    //                 planName: plan?.planName || '',
+    //                 //planNameTa: plan?.translations?.ta?.name || plan?.planNameTa || '',
+    //                 planNameTa: plan?.planNameTa || plan?.translations?.ta?.name || '',
+    //                 planAmount: plan?.planAmount || '',
+    //                 durationMonths: plan?.durationMonths || '',
+    //                 deviceType: plan?.deviceType || '',
+    //                 // status: plan?.status || '',
+    //             });
+    //             setViewform(plan);
+    //             setIsLoading(false);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error loading template', error);
+    //     }
+    // };
     const viewExercisePlan = async (id) => {
-        try {
-            const payload = { params: { id } };
-            const data = await apiRequest(apiRoutes.viewExerciseSubscription, 'POST', payload, router);
-            if (data?.response) {
-                const plan = data?.data;
-                setForm({
-                    planName: plan?.planName || '',
-                    planNameTa: plan?.translations?.ta?.name || plan?.planNameTa || '',
-                    planAmount: plan?.planAmount || '',
-                    durationMonths: plan?.durationMonths || '',
-                    deviceType: plan?.deviceType || '',
-                    // status: plan?.status || '',
-                });
-                setViewform(plan);
-                setIsLoading(false);
+    try {
+        const payload = {
+            params: {
+                id: id,
+                admin: true
             }
-        } catch (error) {
-            console.error('Error loading template', error);
+        };
+
+        console.log("VIEW EXERCISE REQUEST:", payload);
+
+        const data = await apiRequest(
+            apiRoutes.viewExerciseSubscription,
+            'POST',
+            payload,
+            router
+        );
+
+        console.log("VIEW EXERCISE RESPONSE:", data);
+
+        if (data?.response) {
+            const plan = data?.data;
+
+            console.log("PLAN DATA:", plan);
+            console.log("ENGLISH:", plan?.planName);
+            console.log("TAMIL DIRECT:", plan?.planNameTa);
+            console.log("TAMIL TRANSLATION:", plan?.translations?.ta?.name);
+
+            setForm({
+                planName: plan?.planName || '',
+                planNameTa:
+                    plan?.planNameTa ||
+                    plan?.translations?.ta?.name ||
+                    '',
+                planAmount: plan?.planAmount || '',
+                durationMonths: plan?.durationMonths || '',
+                deviceType: plan?.deviceType || '',
+            });
+
+            setViewform(plan);
+            setIsLoading(false);
         }
-    };
+    } catch (error) {
+        console.error('Error loading exercise plan:', error);
+        setIsLoading(false);
+    }
+};
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setFormSubmitted(true);
@@ -175,9 +230,7 @@ export default function Exercise_Plan_Add() {
         manageExercisePlan(payload);
     };
     const manageExercisePlan = async (payload) => {
-        console.log('payload', payload)
         const action = isEdit ? apiRoutes.updateExerciseSubscription : apiRoutes.addExerciseSubscription;
-
         try {
             const data = await apiRequest(action, 'POST', payload, router);
             if (data?.response) {

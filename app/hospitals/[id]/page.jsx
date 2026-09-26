@@ -432,11 +432,19 @@ export default function AddHospital() {
                 setForm({
                     ...form,
                     name: hospital?.name || '',
-                    nameTa: hospital?.translations?.ta?.name || '',
+                    //nameTa: hospital?.translations?.ta?.name || '',
+                    nameTa:
+                        hospital?.nameTa ||
+                        hospital?.translations?.ta?.name ||
+                        '',
                     status: hospital?.status || '',
                     file: hospital?.file || '',
                     address: hospital?.address || '',
-                    addressTa: hospital?.translations?.ta?.address || '',
+                    //addressTa: hospital?.translations?.ta?.address || '',
+                    addressTa:
+                        hospital?.addressTa ||
+                        hospital?.translations?.ta?.address ||
+                        '',
                     mobile: hospital?.mobile || '',
                     email: hospital?.email || '',
                     latitude: hospital?.latitude || '',
@@ -458,91 +466,281 @@ export default function AddHospital() {
         setBackLoading(true);
         router.push('/hospitals');
     }
+
     const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("========== SAVE ==========");
-        console.log("English:", form.name);
-        console.log("Tamil:", form.nameTa);
-        console.log("Full form:", form);
-        setFormSubmitted(true);
-        setIsButtonLoading(true);
-        if (!form.name || !form.file || !form.address || !form.mobile) {
-            // showError('Invalid Form');
-            setIsButtonLoading(false);
-            return;
-        }
-        if (form.facilities.length === 0) {
-            showError('Please add at least one facility');
-            setFormSubmitted(false);
-            setIsButtonLoading(false);
-            return;
-        }
-        // if (form.Doctors.length === 0) {
-        //     showError('Please add at least one doctor');
-        //     setFormSubmitted(false);
-        //     setIsButtonLoading(false);
-        //     return;
-        // }
-        let updateForm;
-        if (isEdit) {
-            const isFileChanged = form.file !== viewHospital.file;
-            updateForm = {
-                ...viewHospital,
-                ...form,
-                id,
-                fileChanged: isFileChanged,
-                typeIds: form.typeIds,
-                departmentIds: form.departmentIds,
-            };
-        }
-        //const formData = objectToFormData(!isEdit ? form : updateForm)
-        const submitForm = !isEdit
-        ? {
+    e.preventDefault();
+
+    console.log("========== SAVE CLICKED ==========");
+    console.log("Form:", form);
+
+    setFormSubmitted(true);
+    setIsButtonLoading(true);
+
+    // English Name
+    if (!form.name || !form.name.trim()) {
+        showError('Please enter Hospital Name');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Tamil Name
+    if (!form.nameTa || !form.nameTa.trim()) {
+        showError('Please enter Tamil Hospital Name');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Thumbnail
+    if (!form.file) {
+        showError('Please select Thumbnail');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Address
+    if (!form.address || !form.address.trim()) {
+        showError('Please select Hospital Address');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Tamil Address
+    if (!form.addressTa || !form.addressTa.trim()) {
+        showError('Please enter Tamil Address');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Mobile
+    if (!form.mobile || !form.mobile.trim()) {
+        showError('Please enter Mobile Number');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Email
+    if (!form.email || !form.email.trim()) {
+        showError('Please enter Email');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    // Facility
+    if (!form.facilities || form.facilities.length === 0) {
+        showError('Please add at least one facility');
+        setIsButtonLoading(false);
+        return;
+    }
+
+    let updateForm;
+
+    if (isEdit) {
+
+        const isFileChanged =
+            form.file !== viewHospital.file;
+
+        updateForm = {
+            ...viewHospital,
             ...form,
-            translations: {
-                en: {
-                    name: form.name,
-                    address: form.address,
-                },
-                ta: {
-                    name: form.nameTa,
-                    address: form.addressTa,
-                }
-            }
-        }
-        : {
-            ...updateForm,
-            translations: {
-                en: {
-                    name: form.name,
-                    address: form.address,
-                },
-                ta: {
-                    name: form.nameTa,
-                    address: form.addressTa,
-                }
-            }
+            id: id,
+            fileChanged: isFileChanged,
+            typeIds: form.typeIds,
+            departmentIds: form.departmentIds
         };
 
-    const formData = objectToFormData(submitForm);
-            manageArticles(formData)
+    } else {
+
+        updateForm = {
+            ...form
         };
-    const manageArticles = async (formData) => {
-        const action = !isEdit ? apiRoutes.addHospital : apiRoutes.updateHospital
-        try {
-            const data = await apiRequest(action, 'POST', formData, router);
-            if (data?.response) {
-                const message = isEdit ? 'Hospital updated successfully!' : 'Hospital added successfully!';
-                showSuccess(message);
-                router.push('/hospitals')
-            }
-            setFormSubmitted(false);
-            setIsButtonLoading(false);
-        } catch (error) {
-            setFormSubmitted(false);
-            setIsButtonLoading(false);
-        }
     }
+
+    const submitForm = {
+        ...updateForm,
+
+        translations: {
+            en: {
+                name: form.name,
+                address: form.address
+            },
+
+            ta: {
+                name: form.nameTa,
+                address: form.addressTa
+            }
+        }
+    };
+
+    console.log("========== SUBMIT FORM ==========");
+    console.log(submitForm);
+
+    const formData = objectToFormData(submitForm);
+
+    console.log("========== FORMDATA ==========");
+
+    for (const [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
+    manageArticles(formData);
+};
+
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     console.log("========== SAVE ==========");
+    //     console.log("English:", form.name);
+    //     console.log("Tamil:", form.nameTa);
+    //     console.log("Full form:", form);
+    //     setFormSubmitted(true);
+    //     setIsButtonLoading(true);
+    //     if (!form.name || !form.file || !form.address || !form.mobile) {
+    //         // showError('Invalid Form');
+    //         setIsButtonLoading(false);
+    //         return;
+    //     }
+    //     if (form.facilities.length === 0) {
+    //         showError('Please add at least one facility');
+    //         setFormSubmitted(false);
+    //         setIsButtonLoading(false);
+    //         return;
+    //     }
+    //     // if (form.Doctors.length === 0) {
+    //     //     showError('Please add at least one doctor');
+    //     //     setFormSubmitted(false);
+    //     //     setIsButtonLoading(false);
+    //     //     return;
+    //     // }
+    //     let updateForm;
+    //     if (isEdit) {
+    //         const isFileChanged = form.file !== viewHospital.file;
+    //         updateForm = {
+    //             ...viewHospital,
+    //             ...form,
+    //             id,
+    //             fileChanged: isFileChanged,
+    //             typeIds: form.typeIds,
+    //             departmentIds: form.departmentIds,
+    //         };
+    //     }
+    //     //const formData = objectToFormData(!isEdit ? form : updateForm)
+    //     const submitForm = !isEdit
+    //     ? {
+    //         ...form,
+    //         translations: {
+    //             en: {
+    //                 name: form.name,
+    //                 address: form.address,
+    //             },
+    //             ta: {
+    //                 name: form.nameTa,
+    //                 address: form.addressTa,
+    //             }
+    //         }
+    //     }
+    //     : {
+    //         ...updateForm,
+    //         translations: {
+    //             en: {
+    //                 name: form.name,
+    //                 address: form.address,
+    //             },
+    //             ta: {
+    //                 name: form.nameTa,
+    //                 address: form.addressTa,
+    //             }
+    //         }
+    //     };
+
+    // const formData = objectToFormData(submitForm);
+    //         manageArticles(formData)
+    // };
+
+    // const manageArticles = async (formData) => {
+    //     const action = !isEdit ? apiRoutes.addHospital : apiRoutes.updateHospital
+    //     try {
+    //         const data = await apiRequest(action, 'POST', formData, router);
+    //         if (data?.response) {
+    //             const message = isEdit ? 'Hospital updated successfully!' : 'Hospital added successfully!';
+    //             showSuccess(message);
+    //             router.push('/hospitals')
+    //         }
+    //         setFormSubmitted(false);
+    //         setIsButtonLoading(false);
+    //     } catch (error) {
+    //         setFormSubmitted(false);
+    //         setIsButtonLoading(false);
+    //     }
+    // }
+    const manageArticles = async (formData) => {
+
+    const action = !isEdit
+        ? apiRoutes.addHospital
+        : apiRoutes.updateHospital;
+
+    console.log("========== HOSPITAL API CALL ==========");
+    console.log("Action:", action);
+
+    try {
+
+        const data = await apiRequest(
+            action,
+            'POST',
+            formData,
+            router
+        );
+
+        console.log("========== HOSPITAL API RESPONSE ==========");
+        console.log(data);
+
+        if (data?.response === true) {
+
+            const message = isEdit
+                ? 'Hospital updated successfully!'
+                : 'Hospital added successfully!';
+
+            showSuccess(message);
+
+            setFormSubmitted(false);
+            setIsButtonLoading(false);
+
+            router.push('/hospitals');
+
+            return;
+        }
+
+        // API returned false
+        console.error(
+            'Hospital API Error:',
+            data
+        );
+
+        showError(
+            data?.message ||
+            data?.msg ||
+            'Hospital save failed'
+        );
+
+        setFormSubmitted(false);
+        setIsButtonLoading(false);
+
+    } catch (error) {
+
+        console.error(
+            '========== HOSPITAL SAVE ERROR ==========',
+            error
+        );
+
+        showError(
+            error?.message ||
+            'Something went wrong while saving hospital'
+        );
+
+        setFormSubmitted(false);
+        setIsButtonLoading(false);
+    }
+};
+
+
     const handleLocationSelect = (lat, lng, address) => {
         setForm(prev => ({
             ...prev,

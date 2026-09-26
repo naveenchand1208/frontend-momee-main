@@ -365,54 +365,40 @@ export default function AddLiveClasses() {
 
 
                 setForm({
-
                     // English
                     name: live?.name || '',
-
-                    // Tamil
+                    // nameTa:
+                    //     live?.translations?.ta?.name || '',
                     nameTa:
-                        live?.translations?.ta?.name || '',
-
-
+                            live?.nameTa ||
+                            live?.translations?.ta?.name ||
+                            '',
                     file:
-                        live?.file || '',
-
-
-                    // English
+                        live?.file || '',                    
                     performedBy:
                         live?.performedBy || '',
-
-                    // Tamil
                     performedByTa:
-                        live?.translations?.ta?.performedBy || '',
-
-
+                            live?.performedByTa ||
+                            live?.translations?.ta?.performedBy ||
+                            '',
+                    // performedByTa:
+                    //     live?.translations?.ta?.performedBy || '',
                     amount:
                         live?.amount || '',
-
-
                     status:
-                        live?.status || 'Active',
-
-
-                    // ONLY ONE MEETING LINK
+                        live?.status || 'Active',                    
                     MeetingLink:
-                        live?.MeetingLink || '',
-
-
-                    // English
+                        live?.MeetingLink || '',                    
                     description:
-                        live?.description || '',
-
-                    // Tamil
+                        live?.description || '',                    
+                    // descriptionTa:
+                    //     live?.translations?.ta?.description || '',
                     descriptionTa:
-                        live?.translations?.ta?.description || '',
-
-
+                        live?.descriptionTa ||
+                        live?.translations?.ta?.description ||
+                        '',
                     momType:
                         live?.momType || '',
-
-
                     deviceType:
                         (live?.deviceType || '').toLowerCase(),
 

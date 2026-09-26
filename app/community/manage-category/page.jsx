@@ -18,6 +18,7 @@ import { hexToRgba } from '@/common/utils/colorUtils';
 export default function Manage_Category() {
     const initialFormState = {
         title: '',
+        titleTa: '',
         file: '',
         color: '#5a03fc',
         momType: '',
@@ -172,21 +173,41 @@ export default function Manage_Category() {
 
         fetchCategories(finalPage + 1, finalRowsPerPage, { sortField, sortOrder });
     };
+    // const handleEdit = (row) => {
+    //     setDisableLoadingForEdit(true);
+    //     console.log('row', row)
+    //     setViewform(row)
+    //     setForm({
+    //         title: row.title,
+    //         file: row.file,
+    //         color: row.color,
+    //         momType: row.momType,
+    //         status: row.status,
+    //     })
+    //     setPreviewUrl(row.file)
+    //     setId(row.id)
+    //     setIsEdit(true)
+    // };
     const handleEdit = (row) => {
-        setDisableLoadingForEdit(true);
-        console.log('row', row)
-        setViewform(row)
-        setForm({
-            title: row.title,
-            file: row.file,
-            color: row.color,
-            momType: row.momType,
-            status: row.status,
-        })
-        setPreviewUrl(row.file)
-        setId(row.id)
-        setIsEdit(true)
-    };
+    setDisableLoadingForEdit(true);
+    setViewform(row)
+    setForm({
+        title: row?.title || '',
+        titleTa:
+            row?.titleTa ||
+            row?.translations?.ta?.title ||
+            '',
+
+        file: row?.file || '',
+        color: row?.color || '#5a03fc',
+        momType: row?.momType || '',
+        status: row?.status || 'Active',
+    });
+
+    setPreviewUrl(row?.file || '');
+    setId(row?.id);
+    setIsEdit(true);
+};
     const handleDelete = (row) => {
         console.log('Parent received DELETE action:', row);
         setViewform(row)
@@ -252,9 +273,11 @@ export default function Manage_Category() {
             setButtonLoading(false);
             return;
         }
+        
         let updateForm = {
             ...form,
         };
+
         if (isEdit) {
             const isFileChanged = form.file !== viewform.file;
 
@@ -264,10 +287,40 @@ export default function Manage_Category() {
                 fileChanged: isFileChanged,
             };
         }
-        console.log('updateForm', updateForm)
 
-        const formData = objectToFormData(updateForm)
+        // IMPORTANT: send Tamil + English translations
+        updateForm.translations = JSON.stringify({
+            en: {
+                title: updateForm.title || '',
+            },
+            ta: {
+                title: updateForm.titleTa || '',
+            },
+        });
+
+        console.log('UPDATE FORM:', updateForm);
+        console.log('TAMIL TITLE:', updateForm.titleTa);
+        console.log('TRANSLATIONS:', updateForm.translations);
+
+        const formData = objectToFormData(updateForm);
+
         manageSubscription(formData);
+        // let updateForm = {
+        //     ...form,
+        // };
+        // if (isEdit) {
+        //     const isFileChanged = form.file !== viewform.file;
+
+        //     updateForm = {
+        //         ...viewform,
+        //         ...form,
+        //         fileChanged: isFileChanged,
+        //     };
+        // }
+        // console.log('updateForm', updateForm)
+
+        // const formData = objectToFormData(updateForm)
+        // manageSubscription(formData);
     };
     const manageSubscription = async (formData) => {
         const action = !isEdit
@@ -330,6 +383,20 @@ export default function Manage_Category() {
                                     required={true}
                                     formSubmitted={formSubmitted}
                                     onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                />
+                                <Input
+                                    label="Tamil Title"
+                                    name="titleTa"
+                                    value={form.titleTa}
+                                    required={true}
+                                    formSubmitted={formSubmitted}
+                                    tamilKeyboard={true}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            titleTa: e.target.value
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="col-md-12">

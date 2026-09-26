@@ -75,41 +75,156 @@ export default function AddQuotes() {
     }, [isEdit]);
 
     const viewQuotes = async (id) => {
-        try {
-            const payload = { params: { id } };
-            const data = await apiRequest(apiRoutes.viewMoodQuotes, "POST", payload, router);
-
-            if (data?.response) {
-                const quotesData = data?.data;
-
-                // setForm({
-                //     id: quotesData.id || "",
-                //     date: convertToInputDate(quotesData.date) || "",
-                //     quotes: quotesData.quotes || {},
-                // });
-                setForm({
-                    id: quotesData.id || '',
-
-                    date:
-                        convertToInputDate(
-                            quotesData.date
-                        ) || '',
-
-                    // English
-                    quotes:
-                        quotesData.quotes || {},
-
-                    // Tamil
-                    quotesTa:
-                        quotesData?.translations?.ta?.quotes || {}
-                });
-
-                setIsLoading(false);
+    try {
+        const payload = {
+            params: {
+                id: id
             }
-        } catch {
+        };
+
+        const data = await apiRequest(
+            apiRoutes.viewMoodQuotes,
+            "POST",
+            payload,
+            router
+        );
+
+        console.log("========== MOOD QUOTES API RESPONSE ==========");
+        console.log("DATA:", data);
+
+        if (data?.response) {
+
+            const quotesData = data.data;
+
+            console.log("QUOTES DATA:", quotesData);
+
+            // Get Tamil quotes directly
+            const tamilQuotes =
+                quotesData?.translations?.ta?.quotes || {};
+
+            console.log("TAMIL QUOTES:", tamilQuotes);
+            console.log(
+                "TAMIL DEFAULT:",
+                tamilQuotes?.default
+            );
+
+            // Build Tamil object explicitly
+            const tamilForm = {
+                0: tamilQuotes?.['0'] || '',
+                1: tamilQuotes?.['1'] || '',
+                2: tamilQuotes?.['2'] || '',
+                3: tamilQuotes?.['3'] || '',
+                4: tamilQuotes?.['4'] || '',
+                5: tamilQuotes?.['5'] || '',
+                6: tamilQuotes?.['6'] || '',
+                7: tamilQuotes?.['7'] || '',
+                8: tamilQuotes?.['8'] || '',
+                9: tamilQuotes?.['9'] || '',
+                10: tamilQuotes?.['10'] || '',
+                11: tamilQuotes?.['11'] || '',
+                12: tamilQuotes?.['12'] || '',
+                13: tamilQuotes?.['13'] || '',
+                14: tamilQuotes?.['14'] || '',
+
+                // THIS IS THE IMPORTANT ONE
+                default: tamilQuotes?.default || ''
+            };
+
+            console.log(
+                "FINAL TAMIL FORM:",
+                tamilForm
+            );
+
+            setForm({
+                id: quotesData?.id || '',
+
+                date:
+                    convertToInputDate(
+                        quotesData?.date
+                    ) || '',
+
+                quotes: {
+                    ...(quotesData?.quotes || {})
+                },
+
+                quotesTa: tamilForm
+            });
+
             setIsLoading(false);
         }
-    };
+
+    } catch (error) {
+
+        console.error(
+            "Mood Quotes View Error:",
+            error
+        );
+
+        setIsLoading(false);
+    }
+};
+
+    // const viewQuotes = async (id) => {
+    //     try {
+    //         const payload = { params: { id } };
+    //         const data = await apiRequest(apiRoutes.viewMoodQuotes, "POST", payload, router);
+
+    //         if (data?.response) {
+    //             const quotesData = data?.data;
+
+    //             // setForm({
+    //             //     id: quotesData.id || "",
+    //             //     date: convertToInputDate(quotesData.date) || "",
+    //             //     quotes: quotesData.quotes || {},
+    //             // });
+    //             // setForm({
+    //             //     id: quotesData.id || '',
+    //             //     date:
+    //             //         convertToInputDate(
+    //             //             quotesData.date
+    //             //         ) || '',
+    //             //     quotes:
+    //             //         quotesData.quotes || {},
+                    
+    //             //     quotesTa:
+    //             //         quotesData?.quotesTa ||
+    //             //         quotesData?.translations?.ta?.quotes ||
+    //             //         {},
+    //             //         default:
+    //             //             quotesData?.translations?.ta?.quotes?.default ||
+    //             //             quotesData?.quotesTa?.default ||
+    //             //             ''
+    //             // });
+    //             setForm({
+    //                 id: quotesData.id || '',
+    //                 date:
+    //                     convertToInputDate(
+    //                         quotesData.date
+    //                     ) || '',
+    //                 // English
+    //                 quotes:
+    //                     quotesData?.quotes || {},
+    //                 // Tamil
+    //                 quotesTa: {
+    //                     ...(
+    //                         quotesData?.quotesTa ||
+    //                         quotesData?.translations?.ta?.quotes ||
+    //                         {}
+    //                     ),
+    //                     // IMPORTANT: Tamil Default Quote
+    //                     default:
+    //                         quotesData?.quotesTa?.default ||
+    //                         quotesData?.translations?.ta?.quotes?.default ||
+    //                         ''
+    //                 }
+    //             });
+
+    //             setIsLoading(false);
+    //         }
+    //     } catch {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     const handleQuoteChange = (key, value) => {
         setForm(prev => ({

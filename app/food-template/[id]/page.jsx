@@ -273,6 +273,23 @@ export default function Foods_Template_Add() {
                                 formSubmitted={formSubmitted}
                                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                             />
+                        </div>                        
+                        <div className="col-md-12 mb-3">
+                            <Input
+                                name="nameTa"
+                                label="Tamil Title"
+                                value={form.nameTa}
+                                required
+                                formSubmitted={formSubmitted}
+                                tamilKeyboard={true}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        nameTa: e.target.value
+                                    })
+                                }
+                            />
+
                         </div>
                         <div className="col-md-12 mb-3">
                             <Input

@@ -59,18 +59,62 @@ export default function PreqMom() {
         const activePayload = { params: { momType: 'pregMom' } };
         const inactivePayload = { params: { momType: 'pregMom' } };
 
-        const [activeRes, inactiveRes] = await Promise.all([
-          apiRequest(apiRoutes.activeUsersCount, 'POST', activePayload, router),
-          apiRequest(apiRoutes.inActiveUsersCount, 'POST', inactivePayload, router),
+        // const [activeRes, inactiveRes] = await Promise.all([
+        //   apiRequest(apiRoutes.activeUsersCount, 'POST', activePayload, router),
+        //   apiRequest(apiRoutes.inActiveUsersCount, 'POST', inactivePayload, router),
+        // ]);
+        const [activeRes, inactiveRes, totalRes] = await Promise.all([
+          apiRequest(
+            apiRoutes.activeUsersCount,
+            'POST',
+            activePayload,
+            router
+          ),
+
+          apiRequest(
+            apiRoutes.inActiveUsersCount,
+            'POST',
+            inactivePayload,
+            router
+          ),
+
+          apiRequest(
+            apiRoutes.totalUsersCount,
+            'POST',
+            {
+              params: {
+                momType: 'pregMom'
+              }
+            },
+            router
+          ),
         ]);
 
         if (activeRes?.response && inactiveRes?.response) {
+          // setUserCountData(prev => ({
+          //   ...prev,
+          //   activeUsersCount: activeRes.data.counts || 0,
+          //   activeUsersIds: activeRes.data.userIds || [],
+          //   inactiveUsersCount: inactiveRes.data.last7Days.count || 0,
+          //   inactiveUsersIds: inactiveRes.data.last7Days.userIds || [],
+          // }));
           setUserCountData(prev => ({
             ...prev,
-            activeUsersCount: activeRes.data.counts || 0,
-            activeUsersIds: activeRes.data.userIds || [],
-            inactiveUsersCount: inactiveRes.data.last7Days.count || 0,
-            inactiveUsersIds: inactiveRes.data.last7Days.userIds || [],
+
+            activeUsersCount:
+              activeRes?.data?.counts || 0,
+
+            activeUsersIds:
+              activeRes?.data?.userIds || [],
+
+            inactiveUsersCount:
+              inactiveRes?.data?.last7Days?.count || 0,
+
+            inactiveUsersIds:
+              inactiveRes?.data?.last7Days?.userIds || [],
+
+            totalUsersCount:
+              totalRes?.data?.count || 0,
           }));
 
           setInactiveRangeData(inactiveRes.data);
@@ -145,6 +189,12 @@ export default function PreqMom() {
       //   { label: 'Last 1 Year', value: 'last1Year' },
       // ],
       // onDropdownChange: handleInactiveRangeChange,
+    },
+    {
+      title: "Total Users",
+      subTitle: "totalUsersCount",
+      count: `${userCountData?.totalUsersCount ?? '-'}`,
+      iconPath: '/assets/icons/active-icon.svg'
     },
   ]
   const actionConfig = [

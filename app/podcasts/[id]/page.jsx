@@ -93,8 +93,13 @@ export default function AddPodCasts() {
                 title:
                     podcasts?.title || '',
 
+                // titleTa:
+                //     podcasts?.translations?.ta?.title || '',
+
                 titleTa:
-                    podcasts?.translations?.ta?.title || '',
+                    podcasts?.titleTa ||
+                    podcasts?.translations?.ta?.title ||
+                    '',
 
                 status:
                     podcasts?.status || '',
@@ -405,6 +410,21 @@ const handleSubmit = (e) => {
                             <Input
                                 label="Title (Tamil)"
                                 name="titleTa"
+                                value={form.titleTa || ''}
+                                onChange={(e) =>
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        titleTa: e.target.value
+                                    }))
+                                }
+                                required={true}
+                                formSubmitted={formSubmitted}
+                                disabled={!form.momType}
+                                tamilKeyboard={true}
+                            />
+                            {/* <Input
+                                label="Title (Tamil)"
+                                name="titleTa"
                                 value={form.titleTa}
                                 onChange={(e) =>
                                     setForm({
@@ -416,8 +436,7 @@ const handleSubmit = (e) => {
                                 formSubmitted={formSubmitted}
                                 disabled={!form.momType}
                                 tamilKeyboard={true}
-                            />
-
+                            /> */}
                         </div>
                         <div className="mt-2">
                             <FileUpload

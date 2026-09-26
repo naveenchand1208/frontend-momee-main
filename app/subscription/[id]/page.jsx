@@ -1,5 +1,4 @@
 'use client';
-
 import { React, useEffect, useState, useRef } from "react";
 import './page.css';
 import Button from "@/components/shared/button/page";
@@ -33,7 +32,6 @@ export default function ManageSubscription() {
     const { id } = useParams();
     const router = useRouter();
     const viewApiRef = useRef();
-
     const isEdit = id !== 'add';
 
     const [months, setMonths] = useState('');
@@ -157,166 +155,114 @@ export default function ManageSubscription() {
 
     // VIEW
     const viewSubscription = async (id) => {
-
         try {
-
             const payload = {
                 params: {
-                    id
+                    id,
+                    admin: true
                 }
             };
-
             const data = await apiRequest(
                 apiRoutes.ViewSubscription,
                 'POST',
                 payload,
                 router
             );
-
             if (data?.response) {
-
                 const plan = data?.data;
-
                 setForm({
                     planName: plan?.planName || '',
-
-                    planNameTa:
-                        plan?.translations?.ta?.name ||
-                        '',
-
+                    //planNameTa: plan?.translations?.ta?.name || '',
+                    planNameTa:plan?.translations?.ta?.name ||
+                            plan?.planNameTa ||
+                            plan?.translations?.ta?.planName ||
+                            '',
                     planAmount: plan?.planAmount || '',
-
                     color: plan?.color || '',
-
-                    durationMonths:
-                        plan?.durationMonths || '',
-
+                    durationMonths:plan?.durationMonths || '',
                     features: plan?.features || [],
-
                     pregMom: false,
-
                     newMom: false,
                 });
-
                 setViewform(plan);
-
                 setIsLoading(false);
             }
-
         } catch (error) {
-
             console.log('error', error);
-
             setIsLoading(false);
         }
     };
 
     // SUBMIT
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-
         setFormSubmitted(true);
         setButtonLoading(true);
-
         if (
             !form.planName ||
             !form.planAmount ||
             !form.durationMonths
         ) {
-
             setButtonLoading(false);
             return;
         }
-
         if (!form.planNameTa) {
-
             showError('Please enter Tamil Plan Name');
-
             setButtonLoading(false);
-
             return;
         }
-
         if (form.features.length === 0) {
-
             showError('Please add at least one feature');
-
             setFormSubmitted(false);
             setButtonLoading(false);
-
             return;
         }
-
         const updateForm = {
-
             ...(isEdit ? viewform : {}),
-
             ...form,
-
             translations: {
-
                 en: {
                     name: form.planName
                 },
-
                 ta: {
                     name: form.planNameTa
                 }
-
             },
-
             features: form.features.map((feature, index) => ({
-
                 id: feature.id || index + 1,
-
                 description: feature.description,
-
                 descriptionTa:
                     feature.descriptionTa ||
                     feature.translations?.ta?.description ||
                     '',
-
                 translations: {
-
                     en: {
                         description:
                             feature.description ||
                             feature.translations?.en?.description ||
                             ''
                     },
-
                     ta: {
                         description:
                             feature.descriptionTa ||
                             feature.translations?.ta?.description ||
                             ''
                     }
-
                 }
-
             }))
-
         };
-
         manageSubscription(updateForm);
-    };
-
+    }
     const manageSubscription = async (formData) => {
-
         try {
-
             const payload = {
-
                 params: !isEdit
                     ? { ...formData }
                     : {
                         ...formData,
                         id: id
                     }
-
             };
-
             const action = !isEdit
                 ? apiRoutes.AddSubscription
                 : apiRoutes.UpdateSubscription;
@@ -327,43 +273,28 @@ export default function ManageSubscription() {
                 payload,
                 router
             );
-
             if (data?.response) {
-
                 const message = isEdit
                     ? 'Plan updated successfully!'
                     : 'Plan added successfully!';
-
                 showSuccess(message);
-
                 router.push('/subscription');
-
                 setFormSubmitted(false);
                 setButtonLoading(false);
             }
-
         } catch (error) {
-
             console.log('error', error);
-
             setFormSubmitted(false);
             setButtonLoading(false);
         }
     };
-
     const DEFAULT_COLOR = '#5a03fc';
-
     const isDarkBlackColor = (hex) => {
-
         const color = hex.replace('#', '');
-
         const r = parseInt(color.substring(0, 2), 16);
         const g = parseInt(color.substring(2, 4), 16);
         const b = parseInt(color.substring(4, 6), 16);
-
-        const brightness =
-            (r * 299 + g * 587 + b * 114) / 1000;
-
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
         return brightness < 60;
     };
 
@@ -380,7 +311,6 @@ export default function ManageSubscription() {
             />
 
             {isLoading ? (
-
                 <div
                     style={{
                         display: 'flex',
@@ -407,7 +337,6 @@ export default function ManageSubscription() {
                         {/* ENGLISH PLAN NAME */}
 
                         <div className="mb-2 mt-2">
-
                             <Input
                                 placeholder=""
                                 name="PlanName"
@@ -422,13 +351,11 @@ export default function ManageSubscription() {
                                     })
                                 }
                             />
-
                         </div>
 
                         {/* TAMIL PLAN NAME */}
 
                         <div className="mb-2 mt-2">
-
                             <Input
                                 placeholder=""
                                 name="PlanNameTa"
@@ -444,7 +371,6 @@ export default function ManageSubscription() {
                                     })
                                 }
                             />
-
                         </div>
 
                         {/* PLAN AMOUNT */}
@@ -470,43 +396,33 @@ export default function ManageSubscription() {
                         </div>
 
                         {/* COLOR */}
-
                         <div className="mb-2 mt-2">
-
                             <ColorInput
                                 label="Color"
                                 required={true}
                                 onChange={(color) => {
-
                                     if (isDarkBlackColor(color)) {
-
                                         alert('Black color not allowed');
-
                                         setForm({
                                             ...form,
                                             color: DEFAULT_COLOR
                                         });
-
                                         return;
                                     }
-
                                     setForm({
                                         ...form,
                                         color
                                     });
-
                                 }}
                                 defaultColor={
                                     form.color || DEFAULT_COLOR
                                 }
                             />
-
                         </div>
 
                         {/* DURATION */}
 
                         <div className="mb-2 mt-2">
-
                             <AutoCompleteInput
                                 label="Duration In Months"
                                 options={months}
@@ -515,13 +431,10 @@ export default function ManageSubscription() {
                                 onSelect={handleSelect}
                                 value={form.durationMonths}
                             />
-
                         </div>
 
                         {/* SAVE */}
-
                         <div className="d-flex justify-content-end align-items-center">
-
                             <Button
                                 label={isEdit ? "Update" : "Save"}
                                 type="submit"
@@ -530,9 +443,7 @@ export default function ManageSubscription() {
                                 backgroundColor={Colors.Primary2}
                                 isLoading={buttonLoading}
                             />
-
                         </div>
-
                     </form>
 
                     {/* RIGHT SIDE */}
@@ -575,7 +486,6 @@ export default function ManageSubscription() {
                             {/* TAMIL FEATURE */}
 
                             <div className="mb-2">
-
                                 <Input
                                     placeholder=""
                                     name="FeatureTa"
@@ -589,9 +499,7 @@ export default function ManageSubscription() {
                                         )
                                     }
                                 />
-
                             </div>
-
                         </div>
 
                         {/* ADD BUTTON */}

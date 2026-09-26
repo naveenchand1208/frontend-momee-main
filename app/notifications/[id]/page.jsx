@@ -255,7 +255,7 @@ export default function NotificationsAdd() {
                     formData,
                     router
                 );
-
+            
             if (data?.response) {
                 showSuccess('Notification sent successfully!');
                 router.push('/notifications');

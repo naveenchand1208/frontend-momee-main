@@ -159,41 +159,109 @@ export default function AddExercises() {
             setForm(prev => ({ ...prev, exercises: updatedExercises }));
         }
     };
-    const handleEditExercises = async (exerciseId) => {
-        try {
-            const response = await apiRequest(
-                apiRoutes.viewExercises,
-                'POST',
-                {
-                    params: {
-                        id: collectionId || id,
-                        exerciseId,
-                    },
-                }
+    const handleEditExercise = async (id, exerciseId) => {
+    try {
+
+        const payload = {
+            params: {
+                id: id,
+                exerciseId: exerciseId
+            }
+        };
+
+        const response = await apiRequest(
+            apiRoutes.viewExercise,
+            'POST',
+            payload,
+            router
+        );
+
+        console.log("VIEW EXERCISE RESPONSE:", response);
+
+        if (response?.response) {
+
+            const exercise = response.data;
+
+            console.log("ENGLISH:", exercise?.exerciseName);
+            console.log("TAMIL:", exercise?.exerciseNameTa);
+            console.log(
+                "TAMIL TRANSLATION:",
+                exercise?.translations?.ta?.exerciseName
             );
-            console.log('response', response)
-            const exercise = response?.data;
-            setViewExercise(response.data)
-            // setExerciseForm({
-            //     exerciseName: exercise.exerciseName,
-            //     sets: exercise.sets,
-            //     seconds: exercise.seconds,
-            //     file: exercise.file,
-            // })
+
             setExerciseForm({
-                exerciseName: exercise.exerciseName || '',
-                exerciseNameTa: exercise?.translations?.ta?.exerciseName || '',
-                sets: exercise.sets || '',
-                seconds: exercise.seconds || '',
-                file: exercise.file || '',
-            })
-            setAudioPreviewUrl(exercise.file);
-            setIsEditing(true);
-            setExerciseId(exercise.exerciseId);
-        } catch (error) {
-            showError('Failed to load exercise details.');
+                exerciseName:
+                    exercise?.exerciseName || '',
+
+                exerciseNameTa:
+                    exercise?.exerciseNameTa ||
+                    exercise?.translations?.ta?.exerciseName ||
+                    '',
+
+                sets:
+                    exercise?.sets || '',
+
+                seconds:
+                    exercise?.seconds || '',
+
+                file:
+                    exercise?.file || '',
+            });
+
+            // your existing edit state code here
         }
-    };
+
+    } catch (error) {
+        console.error("View exercise error:", error);
+    }
+};
+    // const handleEditExercises = async (exerciseId) => {
+    //     try {
+    //         const response = await apiRequest(
+    //             apiRoutes.viewExercises,
+    //             'POST',
+    //             {
+    //                 params: {
+    //                     id: collectionId || id,
+    //                     exerciseId,
+    //                 },
+    //             }
+    //         );
+    //         console.log('response', response)
+    //         const exercise = response?.data;
+    //         setViewExercise(response.data)
+    //         // setExerciseForm({
+    //         //     exerciseName: exercise.exerciseName,
+    //         //     sets: exercise.sets,
+    //         //     seconds: exercise.seconds,
+    //         //     file: exercise.file,
+    //         // })
+    //         // setExerciseForm({
+    //         //     exerciseName: exercise.exerciseName || '',
+    //         //     exerciseNameTa: exercise?.translations?.ta?.exerciseName || '',
+    //         //     sets: exercise.sets || '',
+    //         //     seconds: exercise.seconds || '',
+    //         //     file: exercise.file || '',
+    //         // })
+    //             setExerciseForm({
+    //                 exerciseName: exercise?.exerciseName || '',
+
+    //                 exerciseNameTa:
+    //                     exercise?.exerciseNameTa ||
+    //                     exercise?.translations?.ta?.exerciseName ||
+    //                     '',
+
+    //                 sets: exercise?.sets || '',
+    //                 seconds: exercise?.seconds || '',
+    //                 file: exercise?.file || '',
+    //             });
+    //         setAudioPreviewUrl(exercise.file);
+    //         setIsEditing(true);
+    //         setExerciseId(exercise.exerciseId);
+    //     } catch (error) {
+    //         showError('Failed to load exercise details.');
+    //     }
+    // };
     const viewCollection = async (collectionId) => {
         try {
             const data = await apiRequest(apiRoutes.viewCollection, 'POST', { params: { id: collectionId } }, router);
@@ -201,7 +269,11 @@ export default function AddExercises() {
                 const ex = data.data;
                 setForm({
                     collectionName: ex?.collectionName || '',
-                    collectionNameTa: ex?.translations?.ta?.collectionName || '',
+                    //collectionNameTa: ex?.translations?.ta?.collectionName || '',
+                    collectionNameTa:
+                        ex?.collectionNameTa ||
+                        ex?.translations?.ta?.collectionName ||
+                        '',
                     duration: ex?.duration || '',
                     burnCalories: ex?.burnCalories || '',
                     file: ex?.file || '',
